@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAIWAVE CORPORATION — Kiến Trúc Sư Của Mọi Thực Tại</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{--c:#00f5ff;--c2:#0055ff;--g:#ffd700;--r:#ff0033;--p:#bf00ff;--bg:#010309;--bg2:#020612;--panel:rgba(0,15,35,.75);--b:rgba(0,245,255,.15);--glow:0 0 30px rgba(0,245,255,.4),0 0 80px rgba(0,245,255,.15)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:#b8d8f5;font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:none}
+#cur{position:fixed;width:10px;height:10px;background:var(--c);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;box-shadow:0 0 20px var(--c),0 0 40px var(--c);transition:transform .1s}
+#cur-r{position:fixed;width:32px;height:32px;border:1px solid rgba(0,245,255,.6);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s}
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:2}
+body::before{content:'';position:fixed;inset:-200%;width:400%;height:400%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:.35;animation:grain .4s steps(3) infinite}
+@keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-2%,-1%)}66%{transform:translate(1%,2%)}100%{transform:translate(-1%,-2%)}}
+
+/* TICKER */
+.ticker-wrap{position:fixed;top:0;left:0;right:0;height:28px;background:rgba(255,0,51,.1);border-bottom:1px solid rgba(255,0,51,.3);z-index:200;display:flex;align-items:center;overflow:hidden}
+.ticker-label{flex-shrink:0;padding:0 16px;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:var(--r);border-right:1px solid rgba(255,0,51,.3);white-space:nowrap}
+.ticker-track{flex:1;overflow:hidden}
+.ticker-inner{display:flex;white-space:nowrap;animation:tick 50s linear infinite}
+.ticker-inner span{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(255,200,200,.55);padding:0 40px}
+.ticker-inner span b{color:var(--g)}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* NAV */
+nav{position:fixed;top:28px;left:0;right:0;z-index:100;padding:18px 60px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,245,255,.1)}
+.nav-logo{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--c);text-shadow:var(--glow);letter-spacing:6px;text-decoration:none}
+.nav-logo em{color:var(--g);font-style:normal}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{font-family:'Share Tech Mono',monospace;color:rgba(184,216,245,.6);text-decoration:none;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;transition:color .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:var(--c);transform:scaleX(0);transition:transform .3s}
+.nav-links a:hover{color:var(--c)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-right{display:flex;gap:12px;align-items:center}
+.nav-alert{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:var(--r);animation:blink .8s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.nav-btn{font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:2px;padding:9px 22px;border:1px solid var(--c);color:var(--c);text-decoration:none;text-transform:uppercase;background:rgba(0,245,255,.05);clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .3s}
+.nav-btn:hover{background:rgba(0,245,255,.15);box-shadow:var(--glow)}
+.wrap{position:relative;z-index:10;padding-top:28px}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 60px 80px;position:relative;overflow:hidden}
+.hero-bg-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(8rem,18vw,22rem);color:rgba(0,245,255,.022);letter-spacing:-10px;pointer-events:none;user-select:none;z-index:1}
+.hero-inner{position:relative;z-index:5;max-width:1400px;width:100%;display:grid;grid-template-columns:1fr 480px;gap:80px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:4px;color:var(--r);border:1px solid rgba(255,0,51,.35);padding:7px 18px;margin-bottom:24px;background:rgba(255,0,51,.06);clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);animation:fadeUp 1s ease both}
+.bdot{width:7px;height:7px;border-radius:50%;background:var(--r);box-shadow:0 0 12px var(--r);animation:pulse 1s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.hero-h1{font-family:'Orbitron',monospace;font-weight:900;line-height:1;margin-bottom:8px;animation:fadeUp 1s ease .15s both}
+.h1-sm{font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:10px;color:rgba(184,216,245,.4);display:block;margin-bottom:14px;font-family:'Share Tech Mono',monospace}
+.h1-main{font-size:clamp(3.5rem,7vw,6.8rem);display:block;background:linear-gradient(90deg,#fff 0%,var(--c) 40%,#fff 80%);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite,fadeUp 1s ease .15s both}
+.h1-sub{font-size:clamp(1.8rem,3.5vw,3rem);color:var(--g);display:block;letter-spacing:4px;margin-top:6px}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+.hero-desc{font-size:1.05rem;line-height:1.9;color:rgba(184,216,245,.6);max-width:560px;margin:24px 0 36px;animation:fadeUp 1s ease .3s both}
+.hero-desc strong{color:var(--c)}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;animation:fadeUp 1s ease .45s both}
+.btn-A{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:3px;padding:14px 36px;background:linear-gradient(90deg,var(--c),var(--c2));color:#000;text-decoration:none;font-weight:700;text-transform:uppercase;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;position:relative;overflow:hidden}
+.btn-A::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-100%);transition:transform .5s}
+.btn-A:hover{box-shadow:0 0 50px rgba(0,245,255,.5);transform:translateY(-2px)}
+.btn-A:hover::before{transform:translateX(100%)}
+.btn-B{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:3px;padding:14px 32px;border:1px solid rgba(255,215,0,.5);color:var(--g);text-decoration:none;text-transform:uppercase;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;background:rgba(255,215,0,.05)}
+.btn-B:hover{background:rgba(255,215,0,.1);box-shadow:0 0 30px rgba(255,215,0,.25)}
+.btn-C{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:3px;padding:14px 32px;border:1px solid rgba(255,0,51,.4);color:var(--r);text-decoration:none;text-transform:uppercase;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;background:rgba(255,0,51,.05)}
+.btn-C:hover{background:rgba(255,0,51,.1);box-shadow:0 0 30px rgba(255,0,51,.3)}
+.hero-vis{position:relative;display:flex;align-items:center;justify-content:center;animation:fadeUp 1s ease .2s both}
+.solar{position:relative;width:440px;height:440px}
+.ring{position:absolute;inset:0;border-radius:50%;border:1px solid;animation:spin linear infinite}
+.ring:nth-child(1){border-color:rgba(0,245,255,.25);animation-duration:25s}
+.ring:nth-child(2){inset:30px;border-color:rgba(0,85,255,.35);animation-duration:18s;animation-direction:reverse}
+.ring:nth-child(3){inset:65px;border-color:rgba(255,215,0,.2);animation-duration:12s}
+.ring:nth-child(4){inset:105px;border-color:rgba(191,0,255,.2);animation-duration:8s;animation-direction:reverse}
+.ring::before{content:'';position:absolute;top:-4px;left:50%;width:8px;height:8px;border-radius:50%;transform:translateX(-50%);background:var(--c);box-shadow:0 0 20px var(--c),0 0 40px var(--c)}
+.ring:nth-child(2)::before{background:var(--c2);box-shadow:0 0 20px var(--c2)}
+.ring:nth-child(3)::before{background:var(--g);box-shadow:0 0 20px var(--g);top:auto;bottom:-4px}
+.ring:nth-child(4)::before{background:var(--p);box-shadow:0 0 20px var(--p);left:0;top:50%}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.core{position:absolute;inset:145px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,245,255,.35),rgba(0,50,150,.2),rgba(0,0,15,.9));box-shadow:0 0 80px rgba(0,245,255,.45),0 0 160px rgba(0,100,255,.2),inset 0 0 60px rgba(0,245,255,.15);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;animation:breathe 4s ease infinite}
+@keyframes breathe{0%,100%{box-shadow:0 0 80px rgba(0,245,255,.45),0 0 160px rgba(0,100,255,.2),inset 0 0 60px rgba(0,245,255,.15)}50%{box-shadow:0 0 120px rgba(0,245,255,.65),0 0 250px rgba(0,100,255,.3),inset 0 0 100px rgba(0,245,255,.2)}}
+.core-logo{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:#fff;letter-spacing:3px;text-shadow:0 0 30px var(--c)}
+.core-sub{font-family:'Share Tech Mono',monospace;font-size:.45rem;letter-spacing:5px;color:var(--c);opacity:.8}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+/* MEGA STATS */
+.mega-stats{position:relative;z-index:10;background:rgba(0,5,15,.8);border-top:1px solid var(--b);border-bottom:1px solid var(--b)}
+.stats-row{display:grid;grid-template-columns:repeat(7,1fr);max-width:1600px;margin:0 auto}
+.s-item{padding:26px 18px;border-right:1px solid var(--b);text-align:center;transition:background .3s}
+.s-item:hover{background:rgba(0,245,255,.04)}
+.s-num{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--c);display:block;line-height:1}
+.s-unit{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;color:rgba(184,216,245,.35);display:block;margin-top:6px}
+.s-item.gold .s-num{color:var(--g)}
+.s-item.red .s-num{color:var(--r)}
+.s-item.purple .s-num{color:var(--p)}
+
+/* SECTION */
+section{padding:110px 60px;max-width:1600px;margin:0 auto}
+.s-tag{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:5px;color:var(--g);text-transform:uppercase;margin-bottom:12px;display:block}
+.s-title{font-family:'Orbitron',monospace;font-size:clamp(2rem,3.5vw,3rem);font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px}
+.s-title span{color:var(--c)}
+.s-title em{color:var(--g);font-style:normal}
+.s-desc{font-size:1rem;line-height:1.9;color:rgba(184,216,245,.55);max-width:600px}
+
+/* DOMAINS */
+.domains-head{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:60px}
+.domain-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:rgba(0,245,255,.04);border:1px solid var(--b)}
+.domain-item{padding:32px 24px;background:var(--bg2);position:relative;overflow:hidden;transition:all .4s;border:1px solid transparent;text-align:center}
+.domain-item::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);transition:left .6s}
+.domain-item:hover{border-color:rgba(0,245,255,.3);background:rgba(0,20,45,.8);transform:translateY(-3px)}
+.domain-item:hover::after{left:100%}
+.di-icon{font-size:2.4rem;display:block;margin-bottom:14px}
+.di-cat{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:3px;color:var(--g);margin-bottom:6px}
+.di-name{font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.3}
+.di-count{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--c)}
+.di-count span{color:rgba(184,216,245,.4)}
+
+/* PRODUCTS */
+#products .prod-head{text-align:center;margin-bottom:70px}
+.prod-warning{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--r);border:1px solid rgba(255,0,51,.35);padding:8px 20px;margin-top:14px;background:rgba(255,0,51,.05)}
+.tier-section{margin-bottom:60px}
+.tier-header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:rgba(0,10,25,.8);border-left:3px solid;margin-bottom:16px}
+.tier-header.t5{border-color:var(--r)}
+.tier-header.t4{border-color:var(--p)}
+.tier-header.t3{border-color:var(--g)}
+.tier-header.t2{border-color:var(--c)}
+.tier-label{font-family:'Orbitron',monospace;font-size:.65rem;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+.tier-header.t5 .tier-label{color:var(--r)}
+.tier-header.t4 .tier-label{color:var(--p)}
+.tier-header.t3 .tier-label{color:var(--g)}
+.tier-header.t2 .tier-label{color:var(--c)}
+.tier-count{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;color:rgba(184,216,245,.35);margin-left:auto}
+.prod-grid{display:grid;gap:2px}
+.prod-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.prod-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.prod-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.pc{background:rgba(0,10,22,.9);border:1px solid rgba(0,245,255,.08);padding:28px 26px;position:relative;overflow:hidden;transition:all .4s}
+.pc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,255,.04),transparent 60%);opacity:0;transition:opacity .4s}
+.pc:hover{border-color:rgba(0,245,255,.35);transform:translateY(-3px)}
+.pc:hover::before{opacity:1}
+.pc.t5-card{border-color:rgba(255,0,51,.15)}
+.pc.t5-card:hover{border-color:rgba(255,0,51,.5);box-shadow:0 0 30px rgba(255,0,51,.1)}
+.pc.t4-card{border-color:rgba(191,0,255,.15)}
+.pc.t4-card:hover{border-color:rgba(191,0,255,.5);box-shadow:0 0 30px rgba(191,0,255,.1)}
+.pc.t3-card{border-color:rgba(255,215,0,.12)}
+.pc.t3-card:hover{border-color:rgba(255,215,0,.45)}
+.pc.span2{grid-column:span 2}
+.pc-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.pc-icon{font-size:1.8rem;flex-shrink:0}
+.pc-tier{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:3px;margin-bottom:5px}
+.t5-card .pc-tier{color:var(--r)}
+.t4-card .pc-tier{color:var(--p)}
+.t3-card .pc-tier{color:var(--g)}
+.pc:not(.t5-card):not(.t4-card):not(.t3-card) .pc-tier{color:var(--c)}
+.pc-name{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#fff;line-height:1.3}
+.pc-desc{font-size:.85rem;line-height:1.7;color:rgba(184,216,245,.5)}
+.pc-stat{margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(0,245,255,.7)}
+.pc-stat.red{color:rgba(255,0,51,.75)}
+.pc-stat.gold{color:rgba(255,215,0,.75)}
+.pc-stat.purple{color:rgba(191,0,255,.75)}
+
+/* CLASSIFIED STRIP */
+.cls-strip{background:repeating-linear-gradient(-45deg,rgba(255,0,51,.07) 0px,rgba(255,0,51,.07) 18px,rgba(0,0,0,.15) 18px,rgba(0,0,0,.15) 36px);border-top:1px solid rgba(255,0,51,.3);border-bottom:1px solid rgba(255,0,51,.3);padding:16px 0;overflow:hidden}
+.cls-inner{display:flex;white-space:nowrap;animation:cls-march 25s linear infinite}
+.cls-inner span{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:6px;color:var(--r);padding:0 50px;text-transform:uppercase;opacity:.85}
+@keyframes cls-march{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* POWER SCALE */
+#scale-section{padding:110px 60px;max-width:1600px;margin:0 auto}
+.scale-head{text-align:center;margin-bottom:70px}
+.scale-row{display:grid;grid-template-columns:220px 1fr auto;gap:24px;align-items:center;margin-bottom:18px;opacity:0;transform:translateX(-20px);transition:all .6s ease}
+.scale-row.visible{opacity:1;transform:none}
+.scale-name{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:rgba(184,216,245,.45);text-align:right;padding-right:12px}
+.scale-track{height:34px;background:rgba(0,10,25,.6);border:1px solid rgba(0,245,255,.1);position:relative;overflow:hidden}
+.scale-fill{height:100%;display:flex;align-items:center;padding-left:14px;width:0;transition:width 1.6s cubic-bezier(.23,1,.32,1)}
+.scale-fill-text{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(0,0,0,.85);font-weight:700;position:relative;z-index:2}
+.scale-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.15),transparent)}
+.scale-val{font-family:'Orbitron',monospace;font-size:.7rem;font-weight:700;color:var(--c);white-space:nowrap}
+.sf-hw{background:linear-gradient(90deg,var(--c),var(--c2))}
+.sf-other{background:linear-gradient(90deg,rgba(80,80,100,.5),rgba(50,50,70,.5))}
+.sf-god{background:linear-gradient(90deg,var(--p),var(--r))}
+.sf-uni{background:linear-gradient(90deg,var(--g),#ff8c00)}
+
+/* CHAIRMAN */
+#chairman{background:linear-gradient(180deg,rgba(0,5,20,.95),rgba(0,0,10,1));border-top:1px solid var(--b);border-bottom:1px solid var(--b);padding:0;overflow:hidden;position:relative}
+.chair-glow{position:absolute;top:50%;left:60%;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(0,85,255,.06),transparent 70%);transform:translate(-50%,-50%);pointer-events:none}
+.chair-inner{max-width:1400px;margin:0 auto;padding:100px 60px;display:grid;grid-template-columns:360px 1fr;gap:80px;align-items:start;position:relative;z-index:5}
+.chair-portrait{position:sticky;top:120px}
+.portrait-box{width:320px;height:400px;border:1px solid rgba(0,245,255,.25);background:linear-gradient(160deg,rgba(0,30,70,.5),rgba(0,5,20,.95));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.portrait-box::before,.portrait-box::after{content:'';position:absolute;left:15%;right:15%;height:2px}
+.portrait-box::before{top:-1px;background:var(--c);box-shadow:0 0 25px var(--c)}
+.portrait-box::after{bottom:-1px;background:var(--g);box-shadow:0 0 25px var(--g)}
+.p-avatar{font-size:7rem;filter:drop-shadow(0 0 30px var(--c)) drop-shadow(0 0 60px rgba(0,245,255,.3))}
+.p-scan{position:absolute;top:-5%;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.6;animation:pscan 3s ease infinite}
+@keyframes pscan{0%{top:-5%}100%{top:105%}}
+.p-corner{position:absolute;width:16px;height:16px;border-color:var(--g);border-style:solid}
+.p-corner.tl{top:8px;left:8px;border-width:2px 0 0 2px}
+.p-corner.tr{top:8px;right:8px;border-width:2px 2px 0 0}
+.p-corner.bl{bottom:8px;left:8px;border-width:0 0 2px 2px}
+.p-corner.br{bottom:8px;right:8px;border-width:0 2px 2px 0}
+.p-name-tag{margin-top:12px;text-align:center}
+.p-rank{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:var(--r);margin-bottom:5px}
+.p-fullname{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:#fff;letter-spacing:2px}
+.p-title2{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:3px;color:var(--g);margin-top:4px}
+.clearance-badges{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.cbadge{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;padding:6px 12px;display:flex;align-items:center;gap:8px;border:1px solid}
+.cbadge.omega{border-color:rgba(255,0,51,.4);color:var(--r);background:rgba(255,0,51,.06)}
+.cbadge.alpha{border-color:rgba(191,0,255,.4);color:var(--p);background:rgba(191,0,255,.06)}
+.cbadge.gold-b{border-color:rgba(255,215,0,.4);color:var(--g);background:rgba(255,215,0,.06)}
+.cbadge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse .8s ease infinite}
+.chair-rank-tag{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:5px;color:var(--r);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.chair-rank-tag::before{content:'';display:inline-block;width:30px;height:1px;background:var(--r)}
+.chair-name{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,5vw,4.5rem);font-weight:900;color:#fff;line-height:.95;margin-bottom:6px;text-shadow:0 0 60px rgba(255,255,255,.15)}
+.chair-epithet{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,2vw,1.6rem);color:var(--g);letter-spacing:6px;margin-bottom:30px}
+.cq{border-left:3px solid var(--c);padding:16px 20px;margin-bottom:12px;background:rgba(0,245,255,.03)}
+.cq p{font-size:1.1rem;line-height:1.7;color:rgba(184,216,245,.8);font-style:italic}
+.cq-src{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:var(--c);margin-top:6px}
+.bio-block{margin-bottom:24px}
+.bio-block h4{font-family:'Orbitron',monospace;font-size:.75rem;font-weight:700;color:var(--g);letter-spacing:3px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.bio-block h4::before{content:'▶';color:var(--c);font-size:.6rem}
+.bio-block p{font-size:.95rem;line-height:1.9;color:rgba(184,216,245,.5)}
+.bio-block p strong{color:var(--c)}
+.chair-megastats{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:36px;background:rgba(0,245,255,.05);border:1px solid var(--b)}
+.cms{padding:20px;background:rgba(0,10,25,.8);text-align:center}
+.cms-val{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:var(--c);display:block}
+.cms-label{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;color:rgba(184,216,245,.3);display:block;margin-top:4px}
+.cms.golds .cms-val{color:var(--g)}
+.cms.reds .cms-val{color:var(--r)}
+.cms.purples .cms-val{color:var(--p)}
+.ach-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.ach{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,10,25,.6);border:1px solid rgba(0,245,255,.08);font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(184,216,245,.55);transition:all .3s}
+.ach:hover{border-color:rgba(0,245,255,.25);color:rgba(184,216,245,.8)}
+.ach-ico{font-size:1rem}
+
+/* FOOTER */
+footer{background:rgba(0,0,8,1);border-top:1px solid var(--b);padding:60px}
+.foot-inner{max-width:1400px;margin:0 auto}
+.foot-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:50px;margin-bottom:40px}
+.foot-logo{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:var(--c);letter-spacing:5px;text-shadow:0 0 25px rgba(0,245,255,.35)}
+.foot-logo em{color:var(--g);font-style:normal}
+.foot-tagline{font-size:.8rem;line-height:1.8;color:rgba(184,216,245,.3);margin-top:12px;max-width:280px}
+.foot-col h5{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:4px;color:var(--g);margin-bottom:16px}
+.foot-col ul{list-style:none}
+.foot-col li{margin-bottom:9px}
+.foot-col a{color:rgba(184,216,245,.4);text-decoration:none;font-size:.82rem;transition:color .3s}
+.foot-col a:hover{color:var(--c)}
+.foot-bottom{border-top:1px solid var(--b);padding-top:28px;display:flex;justify-content:space-between;align-items:center}
+.foot-copy{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;color:rgba(184,216,245,.2)}
+.foot-cls{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:var(--r);opacity:.45}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(24px);transition:all .7s ease}
+.reveal.vis{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}
+.reveal.d2{transition-delay:.2s}
+.reveal.d3{transition-delay:.3s}
+
+@media(max-width:1100px){
+  nav{padding:16px 24px}
+  .nav-links{display:none}
+  .hero-inner{grid-template-columns:1fr}
+  .solar{width:280px;height:280px}
+  .ring:nth-child(4){inset:80px}
+  .core{inset:95px}
+  .domains-head{grid-template-columns:1fr}
+  .domain-grid{grid-template-columns:repeat(3,1fr)}
+  .prod-grid.cols-4,.prod-grid.cols-3{grid-template-columns:repeat(2,1fr)}
+  .pc.span2{grid-column:span 1}
+  .chair-inner{grid-template-columns:1fr}
+  .chair-portrait{position:static}
+  .chair-megastats{grid-template-columns:repeat(2,1fr)}
+  .ach-list{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(4,1fr)}
+  section,#scale-section{padding:70px 24px}
+  .foot-top{grid-template-columns:1fr 1fr}
+  .scale-row{grid-template-columns:140px 1fr auto}
+}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-label">⚠ LIVE INTEL</div>
+  <div class="ticker-track">
+    <div class="ticker-inner">
+      <span>Cỗ máy thời gian <b>ChronoShift-∞</b> vừa hoàn tất thử nghiệm tại năm <b>2,047</b> — kết quả: Thành Công Tuyệt Đối</span>
+      <span>Death Star Portable <b>HW-Edition</b> hiện có sẵn — giao hàng trong <b>3 giờ</b>, miễn phí ship liên thiên hà</span>
+      <span>Chủ Tịch Nguyễn Văn Hải vừa giải quyết <b>7 tranh chấp thiên hà</b> trong bữa sáng rồi còn kịp ăn phở</span>
+      <span>Lô vũ khí phản sự sống <b>MK-XII</b> đã xuất khẩu sang chiều không gian <b>#14, #15 và #23</b></span>
+      <span>HAIIQ-∞ vừa mô phỏng <b>47 vũ trụ song song</b> đồng thời — thời gian xử lý: <b>0.000000001 giây</b></span>
+      <span>HaiWave vừa ký hợp đồng mua lại <b>thiên hà Andromeda</b> với giá thỏa thuận</span>
+      <span>Cỗ máy thời gian <b>ChronoShift-∞</b> vừa hoàn tất thử nghiệm tại năm <b>2,047</b> — kết quả: Thành Công Tuyệt Đối</span>
+      <span>Death Star Portable <b>HW-Edition</b> hiện có sẵn — giao hàng trong <b>3 giờ</b>, miễn phí ship liên thiên hà</span>
+      <span>Chủ Tịch Nguyễn Văn Hải vừa giải quyết <b>7 tranh chấp thiên hà</b> trong bữa sáng rồi còn kịp ăn phở</span>
+      <span>Lô vũ khí phản sự sống <b>MK-XII</b> đã xuất khẩu sang chiều không gian <b>#14, #15 và #23</b></span>
+      <span>HAIIQ-∞ vừa mô phỏng <b>47 vũ trụ song song</b> đồng thời — thời gian xử lý: <b>0.000000001 giây</b></span>
+      <span>HaiWave vừa ký hợp đồng mua lại <b>thiên hà Andromeda</b> với giá thỏa thuận</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">HAI<em>WAVE</em></a>
+  <ul class="nav-links">
+    <li><a href="#domains">Lĩnh Vực</a></li>
+    <li><a href="#products">Vũ Khí</a></li>
+    <li><a href="#scale-section">Thống Trị</a></li>
+<li><a href="chairman-hai.html">Chủ Tịch</a></li>
+    <li><a href="#">Cổng Bí Mật</a></li>
+  </ul>
+  <div class="nav-right">
+    <span class="nav-alert">● LIVE</span>
+    <a class="nav-btn" href="#">Truy Cập Hệ Thống</a>
+  </div>
+</nav>
+
+<div class="wrap">
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-text">HAIWAVE</div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge"><span class="bdot"></span>CLEARANCE OMEGA-INFINITY — BEYOND ALL CLASSIFICATION</div>
+      <h1 class="hero-h1">
+        <span class="h1-sm">// TẬP ĐOÀN CÔNG NGHỆ TỐI THƯỢNG</span>
+        <span class="h1-main">HAIWAVE</span>
+        <span class="h1-sub">CORPORATION</span>
+      </h1>
+      <p class="hero-desc">Không phải công ty. Không phải tập đoàn. Không phải đế chế. <strong>HaiWave là thực thể tối thượng</strong> kiểm soát mọi thứ từ vũ khí ánh sáng đến cỗ máy thời gian, từ cổng đa vũ trụ đến thuốc bất tử — và những thứ đó chỉ là <strong>0.000001% những gì chúng tôi thực sự làm.</strong> Sáng lập và điều hành bởi <strong>Chủ Tịch Tối Thượng Nguyễn Văn Hải</strong> — thực thể vượt qua mọi giới hạn của vật lý, toán học, và sự tưởng tượng.</p>
+      <div class="hero-btns">
+        <a href="#products" class="btn-A">Xem Kho Vũ Khí</a>
+<a href="chairman-hai.html" class="btn-B">⬛ Về Chủ Tịch</a>
+        <a href="#domains" class="btn-C">🌌 Các Lĩnh Vực</a>
+      </div>
+    </div>
+    <div class="hero-vis">
+      <div class="solar">
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="core"><span class="core-logo">HW</span><span class="core-sub">OMEGA CLASS</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEGA STATS -->
+<div class="mega-stats">
+  <div class="stats-row">
+    <div class="s-item"><span class="s-num">1,000,000,000+</span><span class="s-unit">Công Nghệ Trong Kho</span></div>
+    <div class="s-item gold"><span class="s-num">∞</span><span class="s-unit">Giá Trị Tài Sản</span></div>
+    <div class="s-item"><span class="s-num">17</span><span class="s-unit">Thiên Hà Phủ Sóng</span></div>
+    <div class="s-item red"><span class="s-num">47</span><span class="s-unit">Chiều Không Gian</span></div>
+    <div class="s-item purple"><span class="s-num">9,999+</span><span class="s-unit">Tiến Sĩ Thiên Tài</span></div>
+    <div class="s-item gold"><span class="s-num">OMEGA-∞</span><span class="s-unit">Cấp Bảo Mật</span></div>
+    <div class="s-item"><span class="s-num">EST. BIG BANG</span><span class="s-unit">Thành Lập Từ Khai Thiên</span></div>
+  </div>
+</div>
+
+<!-- DOMAINS -->
+<section id="domains">
+  <div class="domains-head reveal">
+    <div>
+      <span class="s-tag">▶ LĨNH VỰC KIỂM SOÁT</span>
+      <h2 class="s-title">Chúng Tôi Hoạt Động<br><span>Ở Khắp Mọi Nơi</span><br><em>Và Cả Những Nơi Chưa Tồn Tại</em></h2>
+    </div>
+    <p class="s-desc reveal d1">Từ vũ khí hủy diệt hành tinh đến nano-bot y tế, từ AI siêu trí tuệ đến phép thuật công nghệ — HaiWave không có đối thủ, không có giới hạn. Những gì bạn thấy dưới đây chỉ là <strong style="color:var(--r)">0.0001%</strong> những gì chúng tôi làm được.</p>
+  </div>
+  <div class="domain-grid reveal">
+    <div class="domain-item"><span class="di-icon">⚔️</span><div class="di-cat">DIVISION I</div><div class="di-name">Vũ Khí Hủy Diệt Hàng Loạt</div><div class="di-count"><span>Sản phẩm: </span>847,293</div></div>
+    <div class="domain-item"><span class="di-icon">🧬</span><div class="di-cat">DIVISION II</div><div class="di-name">Công Nghệ Sinh Học Siêu Cấp</div><div class="di-count"><span>Sản phẩm: </span>2,341,007</div></div>
+    <div class="domain-item"><span class="di-icon">🌌</span><div class="di-cat">DIVISION III</div><div class="di-name">Du Hành Không Gian & Thời Gian</div><div class="di-count"><span>Sản phẩm: </span>412,889</div></div>
+    <div class="domain-item"><span class="di-icon">🧠</span><div class="di-cat">DIVISION IV</div><div class="di-name">Trí Tuệ Nhân Tạo Lượng Tử</div><div class="di-count"><span>Sản phẩm: </span>1,000,004</div></div>
+    <div class="domain-item"><span class="di-icon">⚡</span><div class="di-cat">DIVISION V</div><div class="di-name">Năng Lượng & Vật Lý Bẻ Cong</div><div class="di-count"><span>Sản phẩm: </span>3,892,114</div></div>
+    <div class="domain-item"><span class="di-icon">🔮</span><div class="di-cat">DIVISION VI</div><div class="di-name">Phép Thuật Công Nghệ Cao</div><div class="di-count"><span>Sản phẩm: </span>99,999+</div></div>
+    <div class="domain-item"><span class="di-icon">🕳️</span><div class="di-cat">DIVISION VII</div><div class="di-name">Thao Túng Không-Thời Gian</div><div class="di-count"><span>Sản phẩm: </span>217,440</div></div>
+    <div class="domain-item"><span class="di-icon">💀</span><div class="di-cat">DIVISION VIII — MẬT</div><div class="di-name">Vũ Khí Phản Sự Sống & Thực Tại</div><div class="di-count" style="color:var(--r)"><span>Số liệu: </span>CLASSIFIED</div></div>
+    <div class="domain-item"><span class="di-icon">🤖</span><div class="di-cat">DIVISION IX</div><div class="di-name">Android & Cyborg Chiến Đấu</div><div class="di-count"><span>Sản phẩm: </span>5,671,330</div></div>
+    <div class="domain-item"><span class="di-icon">🏗️</span><div class="di-cat">DIVISION X</div><div class="di-name">Xây Dựng Hành Tinh & Thiên Hà</div><div class="di-count"><span>Dự án: </span>1,847 hành tinh</div></div>
+  </div>
+</section>
+
+<!-- CLASSIFIED STRIP -->
+<div class="cls-strip">
+  <div class="cls-inner">
+    <span>⚠ TẤT CẢ SẢN PHẨM ĐƯỢC BẢO VỆ BỞI 47 LỚP MÃ LƯỢNG TỬ ⚠</span>
+    <span>TRUY CẬP TRÁI PHÉP = TIÊU DIỆT TỨC THÌ BẰNG VŨ KHÍ PHẢN SỰ SỐNG ⚠</span>
+    <span>CHỦ TỊCH NGUYỄN VĂN HẢI XEM BẠN MỌI LÚC — KỂ CẢ TRONG GIẤC NGỦ ⚠</span>
+    <span>HAIWAVE CORPORATION — KIẾN TRÚC SƯ CỦA MỌI THỰC TẠI ⚠</span>
+    <span>⚠ TẤT CẢ SẢN PHẨM ĐƯỢC BẢO VỆ BỞI 47 LỚP MÃ LƯỢNG TỬ ⚠</span>
+    <span>TRUY CẬP TRÁI PHÉP = TIÊU DIỆT TỨC THÌ BẰNG VŨ KHÍ PHẢN SỰ SỐNG ⚠</span>
+    <span>CHỦ TỊCH NGUYỄN VĂN HẢI XEM BẠN MỌI LÚC — KỂ CẢ TRONG GIẤC NGỦ ⚠</span>
+    <span>HAIWAVE CORPORATION — KIẾN TRÚC SƯ CỦA MỌI THỰC TẠI ⚠</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="prod-head reveal">
+    <span class="s-tag">▶ KHO VŨ KHÍ & CÔNG NGHỆ</span>
+    <h2 class="s-title">Những Gì Chúng Tôi<br><span>Cho Phép Bạn Biết</span></h2>
+    <div class="prod-warning">⚠ LƯU Ý: Đây chỉ là 0.000001% danh mục sản phẩm đã được giải mật. Phần còn lại sẽ khiến bộ não bạn không thể xử lý.</div>
+  </div>
+
+  <!-- TIER OMEGA -->
+  <div class="tier-section reveal">
+    <div class="tier-header t5"><span>☠</span><span class="tier-label">Tier Omega — Vũ Khí Phá Vỡ Thực Tại</span><span class="tier-count">SỐ LƯỢNG: ???</span></div>
+    <div class="prod-grid cols-2">
+      <div class="pc t5-card span2">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--r)">💀</span><div class="pc-meta"><div class="pc-tier">☠ OMEGA CLASS — BEYOND ALL CLASSIFICATION</div><div class="pc-name">Vũ Khí Phản Sự Sống HW-Annihilator MKXII — "Cái Chết Của Thực Tại"</div></div></div>
+        <p class="pc-desc">Không chỉ giết sinh vật — xóa hoàn toàn khái niệm "sự tồn tại" trong khu vực chỉ định. Mọi thứ từng hiện diện, đang hiện diện, và sẽ hiện diện đều bị loại bỏ khỏi mọi dòng thời gian và mọi chiều không gian. Không để lại dấu vết. Không để lại ký ức. Không để lại gì cả — kể cả khoảng không gian từng được chiếm giữ. Kích hoạt bằng giọng nói của Chủ Tịch Hải và chỉ của Chủ Tịch Hải.</p>
+        <div class="pc-stat red">⬛ SỐ LƯỢNG SỬ DỤNG: [REDACTED] — PHẠM VI: MỌI CHIỀU THỰC TẠI — THỜI GIAN KÍCH HOẠT: -∞ đến +∞</div>
+      </div>
+      <div class="pc t5-card">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--r)">🌑</span><div class="pc-meta"><div class="pc-tier">☠ OMEGA CLASS — PLANETARY ERASER</div><div class="pc-name">Death Star Omega — HW Supreme Edition</div></div></div>
+        <p class="pc-desc">Không chỉ xóa hành tinh. Phiên bản Omega có thể xóa toàn bộ hệ mặt trời, thiên hà, hoặc toàn bộ vũ trụ quan sát được. Kích thước từ size pocket đến "lớn hơn vũ trụ". Remote control bằng sóng não. Tặng kèm ốp lưng và nắp đậy.</p>
+        <div class="pc-stat red">CÔNG SUẤT: 9.99×10¹²⁰ Watt — PHIÊN BẢN ĐÃ GIAO: 47</div>
+      </div>
+      <div class="pc t5-card">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--r)">🕳️</span><div class="pc-meta"><div class="pc-tier">☠ OMEGA CLASS — CAUSALITY WEAPON</div><div class="pc-name">Bom Nghịch Lý Nhân Quả HW-Paradox</div></div></div>
+        <p class="pc-desc">Phá vỡ toàn bộ chuỗi nhân quả của vũ trụ mục tiêu — mọi sự kiện từ Big Bang đến Big Crunch đều bị xáo trộn ngẫu nhiên. Đã thử nghiệm thành công trên 3 vũ trụ song song. Kết quả: Thú vị. Đi kèm bảo hiểm thiệt hại không gian phụ cận.</p>
+        <div class="pc-stat red">CẢNH BÁO: Không kích nổ gần nhà. Bán kính an toàn tối thiểu: 1 vũ trụ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIER ALPHA -->
+  <div class="tier-section reveal d1">
+    <div class="tier-header t4"><span>🔮</span><span class="tier-label">Tier Alpha — Thao Túng Không-Thời Gian</span><span class="tier-count">412 sản phẩm đã giải mật</span></div>
+    <div class="prod-grid cols-3">
+      <div class="pc t4-card">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--p)">🕰️</span><div class="pc-meta"><div class="pc-tier">ALPHA CLASS — TIME TECH</div><div class="pc-name">ChronoShift-∞ "The God Clock"</div></div></div>
+        <p class="pc-desc">Du hành thời gian không giới hạn — quá khứ, tương lai, thậm chí những thời điểm chưa bao giờ xảy ra. Trang bị AI nghịch lý tự xử lý mọi paradox. Người dùng có thể sống đồng thời ở 10,000 thời điểm. Phiên bản Pro tạo được dòng thời gian hoàn toàn mới.</p>
+        <div class="pc-stat purple">PHẠM VI: -∞ đến +∞ — ĐỘ CHÍNH XÁC: Planck Time</div>
+      </div>
+      <div class="pc t4-card">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--p)">🌌</span><div class="pc-meta"><div class="pc-tier">ALPHA CLASS — MULTIVERSE GATE</div><div class="pc-name">Cổng Đa Vũ Trụ HW-MultiGate X</div></div></div>
+        <p class="pc-desc">Kết nối tức thời đến bất kỳ điểm nào trong 10⁵⁰⁰ vũ trụ song song đã được HaiWave lập bản đồ. Kích thước cổng từ "đủ cho phân tử" đến "đủ cho thiên hà". Có bộ lọc chặn zombie và ma cà rồng vũ trụ.</p>
+        <div class="pc-stat purple">VŨ TRỤ ĐÃ LẬP BẢN ĐỒ: 10⁵⁰⁰ — TỐC ĐỘ MỞ: 0.0000001 giây</div>
+      </div>
+      <div class="pc t4-card">
+        <div class="pc-top"><span class="pc-icon" style="color:var(--p)">💜</span><div class="pc-meta"><div class="pc-tier">ALPHA CLASS — SPACE FOLD</div><div class="pc-name">Vòng Tay Warpdrive HW-Fold Pro</div></div></div>
+        <p class="pc-desc">Gấp không gian thay vì dịch chuyển — bạn luôn ở tại chỗ trong khi điểm đến tự đến gần bạn. Hỗ trợ tọa độ trong 47 chiều. Màu sắc: đen, trắng, và "vô hình". Pin hạt nhân lượng tử vĩnh cửu.</p>
+        <div class="pc-stat purple">PHẠM VI: Toàn vũ trụ — THỜI GIAN DỊCH CHUYỂN: 0 giây</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIER S -->
+  <div class="tier-section reveal d2">
+    <div class="tier-header t3"><span>⚡</span><span class="tier-label">Tier S — Vũ Khí Chiến Đấu Siêu Đỉnh</span><span class="tier-count">847,293 sản phẩm</span></div>
+    <div class="prod-grid cols-4">
+      <div class="pc t3-card"><div class="pc-top"><span class="pc-icon" style="color:var(--g)">⚡</span><div class="pc-meta"><div class="pc-tier">S CLASS</div><div class="pc-name">Light Saber X-9000 Ultra</div></div></div><p class="pc-desc">Plasma photon 47 triệu °K. Cắt xuyên thực tại. 16 triệu màu. Chế độ "Thương Lượng" tự động hạ ý chí chiến đấu của đối thủ.</p><div class="pc-stat gold">NHIỆT ĐỘ: 47,000,000°K</div></div>
+      <div class="pc t3-card"><div class="pc-top"><span class="pc-icon" style="color:var(--g)">🔱</span><div class="pc-meta"><div class="pc-tier">S CLASS</div><div class="pc-name">Súng Hấp Dẫn HW-GravGun Mk.VII</div></div></div><p class="pc-desc">Tia hấp dẫn kéo, đẩy, nghiền nát, hoặc phóng mục tiêu vào không gian. Chế độ đặc biệt: biến mục tiêu thành hố đen mini. Pin AA.</p><div class="pc-stat gold">LỰC KÉO: 10²⁰ N — 47 chế độ</div></div>
+      <div class="pc t3-card"><div class="pc-top"><span class="pc-icon" style="color:var(--g)">🌪️</span><div class="pc-meta"><div class="pc-tier">S CLASS</div><div class="pc-name">Súng Kiểm Soát Thần Kinh MindGun</div></div></div><p class="pc-desc">Sóng thần kinh lượng tử kiểm soát ý thức, ký ức, nhân cách trong phạm vi 500km. Phiên bản Omega kiểm soát toàn loài đồng thời.</p><div class="pc-stat gold">PHẠM VI: 500km — MỤC TIÊU: 8 tỉ</div></div>
+      <div class="pc t3-card"><div class="pc-top"><span class="pc-icon" style="color:var(--g)">💥</span><div class="pc-meta"><div class="pc-tier">S CLASS</div><div class="pc-name">Bom Phản Vật Chất HW-AntiBomb</div></div></div><p class="pc-desc">Phản ứng hủy vật chất hoàn toàn. Trang bị GPS tự dẫn và tính năng "hoàn tác" (trong vòng 0.001 giây). Bán kính tùy chỉnh.</p><div class="pc-stat gold">NĂNG LƯỢNG: E=mc² × 10⁴⁰</div></div>
+    </div>
+  </div>
+
+  <!-- TIER A -->
+  <div class="tier-section reveal d3">
+    <div class="tier-header t2"><span>🧠</span><span class="tier-label">Tier A — Công Nghệ Dân Dụng Cao Cấp</span><span class="tier-count">1,000,004+ sản phẩm</span></div>
+    <div class="prod-grid cols-4">
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">🧠</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">HAIIQ-∞ Siêu Máy Tính</div></div></div><p class="pc-desc">∞ qubit. Giải mọi bài toán trước khi bạn đặt ra. Mô phỏng toàn bộ lịch sử vũ trụ mỗi giây. Hỗ trợ USB-C.</p><div class="pc-stat">QUBIT: ∞ — IQ: 10¹⁰⁰⁰</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">💊</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Thuốc Bất Tử HW-Eternal v∞</div></div></div><p class="pc-desc">Uống 1 viên — sống mãi mãi. Miễn nhiễm mọi bệnh, thương tích, lão hóa và sự chán nản. Bảo hành vĩnh viễn thực sự.</p><div class="pc-stat">TUỔI THỌ: ∞ năm — TÁC DỤNG PHỤ: Quá khỏe</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">🤖</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Android Chiến Đấu HAI-Bot Alpha</div></div></div><p class="pc-desc">IQ 999,999. Sức mạnh 10,000 người. Mach 50. Có cảm xúc nhưng chọn không dùng khi chiến đấu. Nấu phở ngon hơn người.</p><div class="pc-stat">PHẢN XẠ: 0.000001ms — Vĩnh cửu</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">🛡️</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Khiên Toàn Diện HW-UltraShield</div></div></div><p class="pc-desc">Bảo vệ khỏi mọi thứ: vũ khí, thiên tai, hố đen, nghịch lý thời gian, và cả bình luận ác ý trên mạng xã hội.</p><div class="pc-stat">BẢO VỆ: Mọi thứ — KỂ CẢ: Drama MXH</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">🚀</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Tàu Vũ Trụ Cá Nhân HW-StarCruiser</div></div></div><p class="pc-desc">Warpdrive 10,000x tốc độ ánh sáng. 50 người. WiFi 6G, điều hòa lượng tử, bếp phở Hà Nội tích hợp. Đỗ được mọi nơi.</p><div class="pc-stat">TỐC ĐỘ: 10,000c — Netflix liên thiên hà</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">🌍</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Máy Xây Hành Tinh PlanetBuilder</div></div></div><p class="pc-desc">Tạo hành tinh hoàn chỉnh từ bụi vũ trụ trong 72 giờ. 14 kiểu địa hình, 47 loại khí quyển, tùy chỉnh trọng lực theo ý.</p><div class="pc-stat">THỜI GIAN: 72h — ĐÃ TẠO: 1,847 hành tinh</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">👁️</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Hệ Thống Giám Sát Omni-Eye</div></div></div><p class="pc-desc">Quan sát real-time mọi điểm trong 47 chiều không gian. Zoom đến mức nguyên tử. AI dự đoán hành vi trước khi đối tượng nghĩ ra.</p><div class="pc-stat">PHẠM VI: 47 chiều — ĐỘ TRỄ: -5 giây</div></div>
+      <div class="pc"><div class="pc-top"><span class="pc-icon" style="color:var(--c)">⚛️</span><div class="pc-meta"><div class="pc-tier">A CLASS</div><div class="pc-name">Lò Phản Ứng Phản Vật Chất Vĩnh Cửu</div></div></div><p class="pc-desc">Năng lượng vô tận từ phản ứng hủy vật chất. Sạch 100%. Chỉ thải ra ánh sáng thuần túy. Kích thước bằng lon Coca.</p><div class="pc-stat">CÔNG SUẤT: ∞ Watt — SIZE: Lon Coca 330ml</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- POWER SCALE -->
+<section id="scale-section">
+  <div class="scale-head reveal">
+    <span class="s-tag">▶ THANG ĐO QUYỀN LỰC</span>
+    <h2 class="s-title">HaiWave So Với <span>Mọi Thứ Khác</span></h2>
+    <p class="s-desc" style="margin:12px auto 0;text-align:center">Để làm rõ quy mô thực sự của tập đoàn và Chủ Tịch Tối Thượng</p>
+  </div>
+  <div id="scale-bars">
+    <div class="scale-row"><div class="scale-name">Một Người Bình Thường</div><div class="scale-track"><div class="scale-fill sf-other" data-w="0.3"><span class="scale-fill-text">0.0001%</span></div></div><div class="scale-val">0.0001%</div></div>
+    <div class="scale-row"><div class="scale-name">Quốc Gia Mạnh Nhất TG</div><div class="scale-track"><div class="scale-fill sf-other" data-w="1"><span class="scale-fill-text">0.001%</span></div></div><div class="scale-val">0.001%</div></div>
+    <div class="scale-row"><div class="scale-name">Tất Cả Nhân Loại</div><div class="scale-track"><div class="scale-fill sf-other" data-w="3"><span class="scale-fill-text">0.01%</span></div></div><div class="scale-val">0.01%</div></div>
+    <div class="scale-row"><div class="scale-name">Mọi Nền Văn Minh Vũ Trụ</div><div class="scale-track"><div class="scale-fill sf-other" data-w="5"><span class="scale-fill-text">0.1%</span></div></div><div class="scale-val">0.1%</div></div>
+    <div class="scale-row"><div class="scale-name">Toàn Bộ Vũ Trụ Quan Sát</div><div class="scale-track"><div class="scale-fill sf-uni" data-w="8"><span class="scale-fill-text">2%</span></div></div><div class="scale-val">2%</div></div>
+    <div class="scale-row"><div class="scale-name">47 Chiều Không Gian</div><div class="scale-track"><div class="scale-fill sf-uni" data-w="14"><span class="scale-fill-text">8%</span></div></div><div class="scale-val">8%</div></div>
+    <div class="scale-row"><div class="scale-name" style="color:var(--g)">Chủ Tịch Nguyễn Văn Hải</div><div class="scale-track"><div class="scale-fill sf-god" data-w="93"><span class="scale-fill-text">97% — VÀ CÒN TIẾP TỤC TĂNG</span></div></div><div class="scale-val" style="color:var(--g)">97%+∞</div></div>
+    <div class="scale-row"><div class="scale-name" style="color:var(--c)">HaiWave Corporation</div><div class="scale-track"><div class="scale-fill sf-hw" data-w="100"><span class="scale-fill-text">100% — TUYỆT ĐỐI VÔ ĐỊCH</span></div></div><div class="scale-val" style="color:var(--c)">100% ∞</div></div>
+  </div>
+</section>
+
+<!-- CHAIRMAN CLASSIFIED STRIP -->
+<div class="cls-strip">
+  <div class="cls-inner">
+    <span>★ NGUYỄN VĂN HẢI — SÁNG LẬP HAIWAVE TỪ TRƯỚC KHI VŨ TRỤ TỒN TẠI ★</span>
+    <span>★ IQ ĐO BẰNG ĐƠN VỊ VŨ TRỤ — 1 IQ HẢI = 10¹⁰⁰⁰ IQ EINSTEIN ★</span>
+    <span>★ ĐÃ GIẢI XONG MỌI BÀI TOÁN CHƯA ĐƯỢC ĐẶT RA ★</span>
+    <span>★ PHỞ NGON NHẤT HÀ NỘI 47 NĂM LIÊN TIẾP ★</span>
+    <span>★ NGUYỄN VĂN HẢI — SÁNG LẬP HAIWAVE TỪ TRƯỚC KHI VŨ TRỤ TỒN TẠI ★</span>
+    <span>★ IQ ĐO BẰNG ĐƠN VỊ VŨ TRỤ — 1 IQ HẢI = 10¹⁰⁰⁰ IQ EINSTEIN ★</span>
+    <span>★ ĐÃ GIẢI XONG MỌI BÀI TOÁN CHƯA ĐƯỢC ĐẶT RA ★</span>
+    <span>★ PHỞ NGON NHẤT HÀ NỘI 47 NĂM LIÊN TIẾP ★</span>
+  </div>
+</div>
+
+<!-- CHAIRMAN -->
+<div id="chairman">
+  <div class="chair-glow"></div>
+  <div class="chair-inner">
+    <div class="chair-portrait">
+      <div class="portrait-box">
+        <div class="p-scan"></div>
+        <div class="p-avatar">👨‍💼</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:4px;color:var(--c)">SUPREME COMMANDER</div>
+        <div class="p-corner tl"></div><div class="p-corner tr"></div>
+        <div class="p-corner bl"></div><div class="p-corner br"></div>
+      </div>
+      <div class="p-name-tag">
+        <div class="p-rank">// ID: HW-SUPREME-001 — BEYOND ALL CLASSIFICATION</div>
+        <div class="p-fullname">NGUYỄN VĂN HẢI</div>
+        <div class="p-title2">Chủ Tịch Tối Thượng — Kiến Trúc Sư Vũ Trụ</div>
+      </div>
+      <div class="clearance-badges">
+        <div class="cbadge omega"><span class="cbadge-dot"></span>CLEARANCE: OMEGA-INFINITY</div>
+        <div class="cbadge alpha"><span class="cbadge-dot"></span>LEVEL: BEYOND ALL LEVELS</div>
+        <div class="cbadge gold-b"><span class="cbadge-dot"></span>STATUS: SUPREME — ABSOLUTE</div>
+      </div>
+    </div>
+
+    <div class="chair-content">
+      <div class="chair-rank-tag">SUPREME COMMANDER — FOUNDER — ARCHITECT OF REALITY</div>
+      <div class="chair-name">NGUYỄN<br>VĂN HẢI</div>
+      <div class="chair-epithet">Kẻ Mà Ngay Cả Vũ Trụ Cũng Kính Nể</div>
+
+      <div class="cq"><p>"Tôi không phá vỡ giới hạn. Tôi là người đã đặt ra giới hạn đó từ đầu — và bây giờ tôi xóa nó đi vì chán rồi."</p><div class="cq-src">// Chủ Tịch Hải — Hội Nghị Thiên Hà Andromeda, Năm 2.4 tỉ sau CN (ông du hành thời gian đến đó)</div></div>
+      <div class="cq"><p>"Einstein đúng ở một số điểm. Tôi đã nói với ông ấy điều này khi gặp nhau năm 1905. Ông ấy rất xúc động và khóc."</p><div class="cq-src">// Chủ Tịch Hải — Tạp chí Liên Thiên Hà Science Omega, số mới nhất</div></div>
+      <div class="cq"><p>"Câu hỏi không phải là tôi có thể làm được gì. Câu hỏi là tôi có muốn hay không — và hầu như lúc nào tôi cũng muốn."</p><div class="cq-src">// Chủ Tịch Hải — Mọi lúc, mọi nơi, mọi chiều không gian đồng thời</div></div>
+
+      <div class="bio-block">
+        <h4>Nguồn Gốc & Sự Ra Đời Huyền Thoại</h4>
+        <p>Nguyễn Văn Hải ra đời tại Hà Nội vào một ngày không ai nhớ được — vì sự kiện này quá vĩ đại khiến não người bình thường không lưu trữ nổi. <strong>Não ông đã hoạt động đầy đủ từ trong bụng mẹ</strong> và ông đã tự đỡ đẻ chính mình vì bác sĩ không đủ nhanh. Ngay khi sinh ra, ông đã nói được <strong>47 ngôn ngữ</strong> kể cả ngôn ngữ của các nền văn minh chưa được phát hiện. Bước đầu tiên ông đi được là đặt chân lên mặt trăng — bằng cách nhảy.</p>
+      </div>
+      <div class="bio-block">
+        <h4>Học Vấn — Khiêm Tốn Mà Nói Là Vô Địch</h4>
+        <p>Hoàn thành <strong>17 bằng Tiến Sĩ đồng thời</strong> trước năm 10 tuổi (chương trình quá chậm). Tự tạo 3 ngành khoa học mới để có thêm bằng. <strong>Giải được bài toán P=NP</strong> trong bữa sáng, thấy quá đơn giản nên tạo ra 1,000 bài toán khó hơn và giải xong tất cả trước giờ ăn trưa. Từ chối <strong>Nobel Prize 47 lần</strong> vì "giải thưởng không xứng tầm." Ủy ban Nobel sau đó tạo ra "Nobel Prize Omega" — ông nhận 3 cái rồi thôi vì <strong>chỗ để trưng bày hết chỗ.</strong></p>
+      </div>
+      <div class="bio-block">
+        <h4>Thành Lập HaiWave — Từ Trước Big Bang</h4>
+        <p>HaiWave được thành lập <strong>trước khi Big Bang xảy ra</strong> — ông đã du hành về điểm đó và cắm cờ vào khoảng không gian nguyên thủy. Trong <strong>7 ngày đầu tiên</strong>, tập đoàn kiểm soát 3 thiên hà, phát triển 1 triệu sản phẩm, và ký 14 hiệp ước hòa bình liên thiên hà. Hiện tại kiểm soát <strong>47 chiều không gian, 17 thiên hà</strong>, và đang đàm phán mua lại vũ trụ thứ 48. Đề nghị mua đã được gửi đi nhưng chưa ai trả lời được vì câu hỏi "ai sở hữu vũ trụ" quá phức tạp với mọi người — trừ Chủ Tịch Hải.</p>
+      </div>
+      <div class="bio-block">
+        <h4>Tài Năng Cá Nhân Ngoài Công Việc</h4>
+        <p>Giữ kỷ lục <strong>nấu phở ngon nhất Hà Nội 47 năm liên tiếp.</strong> Chơi cờ vua ở cấp 10 nước/giây, đánh bại mọi siêu máy tính kể cả HAIIQ-∞ do chính ông tạo ra. Nói được <strong>10,000 ngôn ngữ</strong> kể cả tiếng sinh vật chưa tiến hóa xong. Cao 1m75 — <strong>đây là thông tin duy nhất về ngoại hình được phép tiết lộ.</strong> Sở thích: du hành thời gian, đọc sách (đã đọc hết mọi cuốn sách từng được viết và chưa được viết), và xem phim. Nhận xét về mọi bộ phim: "Hay, nhưng tôi đã biết kết thúc rồi."</p>
+      </div>
+
+      <div class="chair-megastats">
+        <div class="cms golds"><span class="cms-val">∞</span><span class="cms-label">IQ (Đơn Vị Vũ Trụ)</span></div>
+        <div class="cms"><span class="cms-val">17+</span><span class="cms-label">Bằng Tiến Sĩ</span></div>
+        <div class="cms reds"><span class="cms-val">47×</span><span class="cms-label">Nobel Từ Chối</span></div>
+        <div class="cms purples"><span class="cms-val">∞</span><span class="cms-label">Tuổi Thật (Bí Mật)</span></div>
+        <div class="cms"><span class="cms-val">10,000</span><span class="cms-label">Ngôn Ngữ Thông Thạo</span></div>
+        <div class="cms golds"><span class="cms-val">#1</span><span class="cms-label">Xếp Hạng Mọi Chiều</span></div>
+        <div class="cms reds"><span class="cms-val">Big Bang</span><span class="cms-label">Thành Lập HaiWave</span></div>
+        <div class="cms"><span class="cms-val">47 Chiều</span><span class="cms-label">Đồng Thời Hiện Diện</span></div>
+      </div>
+
+      <div class="chair-achievements" style="margin-top:32px">
+<a href="chairman-hai.html" style="display:inline-block;margin-top:28px;font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:3px;padding:14px 36px;border:1px solid rgba(255,215,0,.5);color:#ffd700;text-decoration:none;text-transform:uppercase;background:rgba(255,215,0,.05);clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s">
+  ★ XEM HỒ SƠ VĨ ĐẠI ĐẦY ĐỦ →
+</a>
+        <h4 style="font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:4px;color:var(--g);margin-bottom:14px">THÀNH TÍCH TIÊU BIỂU (Đã Được Giải Mật Một Phần)</h4>
+        <div class="ach-list">
+          <div class="ach"><span class="ach-ico">🏆</span>Giải quyết Lý thuyết Thống Nhất Vũ Trụ trong 5 phút</div>
+          <div class="ach"><span class="ach-ico">🌌</span>Mua lại 17 thiên hà với giá thỏa thuận</div>
+          <div class="ach"><span class="ach-ico">⏰</span>Du hành về trước Big Bang và về nhà kịp bữa tối</div>
+          <div class="ach"><span class="ach-ico">🧬</span>Tự thiết kế lại DNA của bản thân 7 lần</div>
+          <div class="ach"><span class="ach-ico">🤝</span>Ký hòa ước với 2,847 nền văn minh ngoài hành tinh</div>
+          <div class="ach"><span class="ach-ico">🍜</span>Phở ngon nhất Hà Nội 47 năm liên tiếp</div>
+          <div class="ach"><span class="ach-ico">♟️</span>Đánh bại mọi AI cờ vua từng tồn tại và chưa tồn tại</div>
+          <div class="ach"><span class="ach-ico">⚛️</span>Tìm ra hạt nhân vật chất thứ 48 (giữ bí mật)</div>
+          <div class="ach"><span class="ach-ico">📐</span>Vẽ lại bản đồ 47 chiều không gian bằng tay trái</div>
+          <div class="ach"><span class="ach-ico">🧪</span>Tạo ra sự sống trên 12 hành tinh mới từ số 0</div>
+          <div class="ach"><span class="ach-ico">🎓</span>Dạy Einstein về vật lý (ông ấy cảm ơn rất nhiều)</div>
+          <div class="ach"><span class="ach-ico">🌟</span>Đặt tên cho 4 tỉ ngôi sao mới một mình</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div>
+        <div class="foot-logo">HAI<em>WAVE</em></div>
+        <p class="foot-tagline">Không phải công ty. Không phải đế chế. HaiWave là thực thể tối thượng kiến tạo mọi thực tại, tồn tại ở mọi chiều không gian, không bao giờ đóng cửa kể cả ngày lễ — và đã hoạt động từ trước khi thời gian tồn tại.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Vũ Khí & Công Nghệ</h5>
+        <ul>
+          <li><a href="#">Tier Omega — Phá Vỡ Thực Tại</a></li>
+          <li><a href="#">Tier Alpha — Không-Thời Gian</a></li>
+          <li><a href="#">Tier S — Chiến Đấu</a></li>
+          <li><a href="#">Tier A — Dân Dụng</a></li>
+          <li><a href="#">Danh Mục Bí Mật ⬛</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Tập Đoàn</h5>
+        <ul>
+          <li><a href="#">Về HaiWave (Tóm Tắt 500 Trang)</a></li>
+          <li><a href="#">Ban Lãnh Đạo — Chỉ Có 1 Người</a></li>
+          <li><a href="#">R&D — Nghiên Cứu Bí Mật</a></li>
+          <li><a href="#">Tuyển Dụng Thiên Tài</a></li>
+          <li><a href="#">Lịch Sử Từ Big Bang</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Lĩnh Vực</h5>
+        <ul>
+          <li><a href="#">Vũ Khí Hủy Diệt Hàng Loạt</a></li>
+          <li><a href="#">Sinh Học & Bất Tử</a></li>
+          <li><a href="#">Du Hành Vũ Trụ & Thời Gian</a></li>
+          <li><a href="#">Phép Thuật Công Nghệ</a></li>
+          <li><a href="#">Xây Dựng Hành Tinh</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Liên Hệ</h5>
+        <ul>
+          <li><a href="#">Trụ Sở: Chiều Không Gian #47</a></li>
+          <li><a href="#">Chi Nhánh: 17 Thiên Hà</a></li>
+          <li><a href="#">Email Lượng Tử Tức Thời</a></li>
+          <li><a href="#">Teleport Trực Tiếp 24/7/∞</a></li>
+          <li><a href="#">Gặp Chủ Tịch (Rất Khó)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div class="foot-copy">© Big Bang–∞ HAIWAVE CORPORATION. ALL REALITIES RESERVED. Mọi vi phạm bản quyền sẽ bị xử lý bằng Vũ Khí Phản Sự Sống.</div>
+      <div class="foot-cls">⚠ CLASSIFIED: OMEGA-∞</div>
+    </div>
+  </div>
+</footer>
+</div>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a)})();
+document.querySelectorAll('a,button,.pc,.domain-item,.s-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';curR.style.width='56px';curR.style.height='56px'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';curR.style.width='32px';curR.style.height='32px'});
+});
+
+// CANVAS
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+function resize(){cv.width=innerWidth;cv.height=innerHeight}resize();window.addEventListener('resize',resize);
+const stars=Array.from({length:250},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3+.2,spd:Math.random()*.25+.04,a:Math.random(),ad:(Math.random()<.5?1:-1)*(Math.random()*.004+.002)}));
+const nodes=Array.from({length:80},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35}));
+function drawFrame(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  for(const s of stars){s.a+=s.ad;if(s.a>1||s.a<0)s.ad*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(150,220,255,${s.a*.6})`;ctx.fill();s.y+=s.spd;if(s.y>cv.height)s.y=0}
+  for(const n of nodes){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>cv.width)n.vx*=-1;if(n.y<0||n.y>cv.height)n.vy*=-1}
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<140){ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.strokeStyle=`rgba(0,245,255,${.07*(1-d/140)})`;ctx.lineWidth=.5;ctx.stroke()}}
+  for(const n of nodes){ctx.beginPath();ctx.arc(n.x,n.y,1.5,0,Math.PI*2);ctx.fillStyle='rgba(0,245,255,.25)';ctx.fill()}
+  requestAnimationFrame(drawFrame);
+}drawFrame();
+
+// REVEAL
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('vis');ro.unobserve(x.target)}})},{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// SCALE BARS
+const so=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){
+  x.target.querySelectorAll('.scale-row').forEach((row,i)=>{setTimeout(()=>{row.classList.add('visible')},i*120)});
+  x.target.querySelectorAll('.scale-fill').forEach((fill,i)=>{const w=parseFloat(fill.dataset.w);setTimeout(()=>{fill.style.width=w+'%'},i*120+200)});
+  so.unobserve(x.target);
+}})},{threshold:.15});
+const sb=document.getElementById('scale-bars');if(sb)so.observe(sb);
+
+// PRODUCTS STAGGER
+const po=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){
+  x.target.querySelectorAll('.pc,.domain-item').forEach((c,i)=>{c.style.opacity='0';c.style.transform='translateY(18px)';setTimeout(()=>{c.style.transition='all .5s ease';c.style.opacity='1';c.style.transform='none'},(i%8)*70+80)});
+  po.unobserve(x.target);
+}})},{threshold:.05});
+document.querySelectorAll('.prod-grid,.domain-grid').forEach(g=>po.observe(g));
+</script>
+</body>
+</html>
