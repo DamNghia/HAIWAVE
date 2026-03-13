@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGUYỄN VĂN HẢI — Thực Thể Vượt Mọi Ngôn Từ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&family=Share+Tech+Mono&family=IM+Fell+English:ital@0;1&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffd700;--gold2:#ffaa00;--gold3:#ff8c00;
+  --crimson:#cc0020;--crimson2:#ff003c;
+  --bg:#03000a;--bg2:#07000f;
+  --white:#fff8e7;--dim:rgba(255,215,0,.07);
+  --glow-gold:0 0 40px rgba(255,215,0,.5),0 0 100px rgba(255,170,0,.25);
+  --glow-red:0 0 40px rgba(204,0,32,.5),0 0 100px rgba(255,0,60,.2);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur{position:fixed;width:14px;height:14px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;box-shadow:0 0 20px var(--gold),0 0 50px rgba(255,215,0,.4);transition:transform .08s}
+#cur-r{position:fixed;width:40px;height:40px;border:1px solid rgba(255,215,0,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .2s}
+
+/* CANVAS LAYERS */
+#cv-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+#cv-particles{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* SCANLINES */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 6px);pointer-events:none;z-index:2}
+
+/* GRAIN */
+.grain{position:fixed;inset:-200%;width:400%;height:400%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");pointer-events:none;z-index:3;opacity:.5;animation:grain .3s steps(4) infinite}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-1%,2%)}50%{transform:translate(2%,-1%)}75%{transform:translate(-2%,1%)}100%{transform:translate(1%,-2%)}}
+
+/* WRAP */
+.wrap{position:relative;z-index:10}
+
+/* ══════════════════ NAV ══════════════════ */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:18px 60px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(3,0,10,.95),transparent);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,215,0,.08)}
+.nav-back{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:4px;color:rgba(255,215,0,.6);text-decoration:none;display:flex;align-items:center;gap:10px;transition:color .3s}
+.nav-back:hover{color:var(--gold)}
+.nav-back::before{content:'←';font-size:.9rem}
+.nav-title{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:6px;color:rgba(255,215,0,.5);text-align:center}
+.nav-seal{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(255,215,0,.35)}
+
+/* ══════════════════ HERO ══════════════════ */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 40px 80px}
+
+/* SACRED GEOMETRY BG */
+.sacred-geo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+.sg-ring{position:absolute;border-radius:50%;border:1px solid;animation:sgSpin linear infinite}
+.sg-ring:nth-child(1){width:600px;height:600px;border-color:rgba(255,215,0,.06);animation-duration:60s}
+.sg-ring:nth-child(2){width:500px;height:500px;border-color:rgba(255,170,0,.08);animation-duration:45s;animation-direction:reverse}
+.sg-ring:nth-child(3){width:380px;height:380px;border-color:rgba(255,215,0,.07);animation-duration:30s}
+.sg-ring:nth-child(4){width:260px;height:260px;border-color:rgba(255,140,0,.1);animation-duration:20s;animation-direction:reverse}
+.sg-ring:nth-child(5){width:160px;height:160px;border-color:rgba(255,215,0,.12);animation-duration:12s}
+@keyframes sgSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* DIVINE LIGHT RAYS */
+.rays{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+.ray{position:absolute;width:2px;height:50vh;background:linear-gradient(180deg,transparent,rgba(255,215,0,.06),transparent);transform-origin:bottom center;bottom:50%}
+
+/* HERO CONTENT */
+.hero-content{position:relative;z-index:5;text-align:center;max-width:1000px}
+
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:8px;color:rgba(255,215,0,.5);text-transform:uppercase;margin-bottom:28px;animation:fadeDown 1.2s ease both;display:flex;align-items:center;justify-content:center;gap:16px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';display:inline-block;width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.4),transparent)}
+
+.hero-name{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(3rem,9vw,8.5rem);line-height:.9;letter-spacing:-2px;animation:blazeIn 1.5s cubic-bezier(.16,1,.3,1) .3s both;position:relative;display:inline-block}
+.hero-name .n1{display:block;color:#fff;text-shadow:0 0 60px rgba(255,255,255,.3),0 0 120px rgba(255,215,0,.1)}
+.hero-name .n2{display:block;background:linear-gradient(90deg,var(--gold3),var(--gold),#fff8d0,var(--gold),var(--gold3));background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:goldShimmer 5s linear infinite,blazeIn 1.5s cubic-bezier(.16,1,.3,1) .3s both;filter:drop-shadow(0 0 30px rgba(255,215,0,.6))}
+.hero-name .n3{display:block;color:#fff;text-shadow:0 0 60px rgba(255,255,255,.3)}
+@keyframes goldShimmer{0%{background-position:0%}100%{background-position:300%}}
+@keyframes blazeIn{0%{opacity:0;transform:scale(.8) translateY(40px);filter:blur(20px)}100%{opacity:1;transform:none;filter:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+
+.hero-divider{display:flex;align-items:center;justify-content:center;gap:20px;margin:28px 0;animation:fadeUp 1s ease .8s both}
+.hdiv-line{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.hdiv-diamond{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 20px var(--gold);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:rotate(45deg) scale(1)}50%{opacity:.6;transform:rotate(45deg) scale(1.4)}}
+
+.hero-epithet{font-family:'Cinzel',serif;font-size:clamp(1rem,2.5vw,1.8rem);color:rgba(255,215,0,.75);letter-spacing:4px;margin-bottom:18px;animation:fadeUp 1s ease 1s both}
+.hero-tagline{font-family:'IM Fell English',serif;font-style:italic;font-size:clamp(1rem,2vw,1.4rem);color:rgba(255,248,231,.5);line-height:1.8;max-width:700px;margin:0 auto 40px;animation:fadeUp 1s ease 1.2s both}
+
+.hero-scroll-cue{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;animation:fadeUp 1s ease 2s both;z-index:5}
+.hsc-text{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:5px;color:rgba(255,215,0,.3)}
+.hsc-line{width:1px;height:50px;background:linear-gradient(180deg,rgba(255,215,0,.4),transparent);animation:scPulse 2s ease infinite}
+@keyframes scPulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* ══════════════════ VERDICT SECTION ══════════════════ */
+#verdict{padding:100px 60px;max-width:1400px;margin:0 auto}
+.verdict-header{text-align:center;margin-bottom:70px}
+.s-tag{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:6px;color:rgba(255,215,0,.5);text-transform:uppercase;display:block;margin-bottom:12px}
+.s-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,3.5vw,3rem);font-weight:900;color:var(--white);line-height:1.1}
+.s-title span{color:var(--gold)}
+
+.verdict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.vcard{background:rgba(255,215,0,.03);border:1px solid rgba(255,215,0,.1);padding:40px 32px;position:relative;overflow:hidden;transition:all .4s}
+.vcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .4s}
+.vcard::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,215,0,.05),transparent 70%);opacity:0;transition:opacity .4s}
+.vcard:hover{border-color:rgba(255,215,0,.35);transform:translateY(-4px)}
+.vcard:hover::before,.vcard:hover::after{opacity:1}
+.vcard.large{grid-column:span 2}
+.vcard.crimson{border-color:rgba(204,0,32,.15);background:rgba(204,0,32,.03)}
+.vcard.crimson::before{background:linear-gradient(90deg,transparent,var(--crimson2),transparent)}
+.vcard.crimson:hover{border-color:rgba(204,0,32,.45)}
+
+.vc-source{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:4px;color:rgba(255,215,0,.45);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.vc-source::before{content:'';display:inline-block;width:20px;height:1px;background:rgba(255,215,0,.4)}
+.vc-quote{font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;line-height:1.85;color:rgba(255,248,231,.75)}
+.vc-quote strong{color:var(--gold);font-style:normal}
+.vc-icon{font-size:2rem;margin-bottom:16px;display:block;filter:drop-shadow(0 0 12px currentColor)}
+
+/* ══════════════════ CONTRIBUTIONS ══════════════════ */
+#contributions{padding:100px 60px;position:relative}
+.contrib-inner{max-width:1400px;margin:0 auto}
+.contrib-header{text-align:center;margin-bottom:80px}
+
+.contrib-mega-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-bottom:80px}
+.contrib-col h3{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);letter-spacing:4px;margin-bottom:30px;padding-bottom:14px;border-bottom:1px solid rgba(255,215,0,.15);display:flex;align-items:center;gap:12px}
+.contrib-col h3::before{content:'▶';font-size:.7rem;color:rgba(255,215,0,.5)}
+
+.contrib-item{padding:20px 0;border-bottom:1px solid rgba(255,215,0,.06);position:relative;padding-left:20px;transition:padding-left .3s}
+.contrib-item::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:6px;height:6px;border:1px solid rgba(255,215,0,.4);background:rgba(255,215,0,.1);transition:all .3s}
+.contrib-item:hover{padding-left:28px}
+.contrib-item:hover::before{background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.ci-title{font-family:'Cinzel',serif;font-size:.9rem;color:rgba(255,248,231,.9);margin-bottom:6px;font-weight:700}
+.ci-desc{font-size:.88rem;line-height:1.8;color:rgba(255,248,231,.45)}
+.ci-impact{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(255,215,0,.6);margin-top:8px}
+
+/* ══════════════════ TIMELINE ══════════════════ */
+#timeline{padding:100px 0;background:linear-gradient(180deg,transparent,rgba(255,215,0,.02),transparent);position:relative}
+.tl-inner{max-width:1400px;margin:0 auto;padding:0 60px}
+.tl-header{text-align:center;margin-bottom:80px}
+
+.tl-track{position:relative;padding-left:60px}
+.tl-track::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(255,215,0,.3) 10%,rgba(255,215,0,.3) 90%,transparent)}
+
+.tl-item{position:relative;margin-bottom:50px;opacity:0;transform:translateX(-30px);transition:all .7s ease}
+.tl-item.visible{opacity:1;transform:none}
+.tl-dot{position:absolute;left:-48px;top:6px;width:16px;height:16px;border:2px solid var(--gold);background:rgba(255,215,0,.1);transform:rotate(45deg);transition:all .3s}
+.tl-dot::after{content:'';position:absolute;inset:3px;background:var(--gold);opacity:0;transition:opacity .3s}
+.tl-item:hover .tl-dot{background:rgba(255,215,0,.3);box-shadow:0 0 20px rgba(255,215,0,.4)}
+.tl-item:hover .tl-dot::after{opacity:1}
+.tl-era{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:4px;color:rgba(255,140,0,.7);margin-bottom:8px}
+.tl-title{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:10px}
+.tl-desc{font-size:.95rem;line-height:1.85;color:rgba(255,248,231,.5)}
+.tl-desc strong{color:rgba(255,215,0,.85)}
+.tl-scale{margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;color:rgba(255,215,0,.5);display:flex;align-items:center;gap:10px}
+.tl-scale::before{content:'QUYẾT MÔNG:';color:rgba(255,140,0,.5)}
+
+/* ══════════════════ NUMBERS ══════════════════ */
+#numbers{padding:100px 60px;background:rgba(255,215,0,.015);border-top:1px solid rgba(255,215,0,.08);border-bottom:1px solid rgba(255,215,0,.08)}
+.num-inner{max-width:1400px;margin:0 auto}
+.num-header{text-align:center;margin-bottom:70px}
+.num-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:2px}
+.num-grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.n-item{padding:36px 24px;background:rgba(0,0,0,.4);border:1px solid rgba(255,215,0,.08);text-align:center;position:relative;overflow:hidden;transition:all .4s}
+.n-item::before{content:'';position:absolute;bottom:0;left:0;right:0;height:0;background:linear-gradient(180deg,rgba(255,215,0,.05),rgba(255,215,0,.02));transition:height .4s}
+.n-item:hover{border-color:rgba(255,215,0,.3)}
+.n-item:hover::before{height:100%}
+.n-val{font-family:'Cinzel',serif;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:900;color:var(--gold);display:block;line-height:1;text-shadow:0 0 30px rgba(255,215,0,.3)}
+.n-label{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:3px;color:rgba(255,248,231,.3);display:block;margin-top:10px}
+.n-item.crimson-n .n-val{color:var(--crimson2);text-shadow:0 0 30px rgba(255,0,60,.3)}
+.n-item.white-n .n-val{color:#fff;font-size:clamp(1rem,2vw,1.6rem)}
+
+/* ══════════════════ IMPACT MAP ══════════════════ */
+#impact{padding:100px 60px;max-width:1400px;margin:0 auto}
+.impact-header{text-align:center;margin-bottom:70px}
+.impact-domains{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.id-card{border:1px solid rgba(255,215,0,.1);padding:36px 30px;background:rgba(0,0,0,.5);position:relative;overflow:hidden;transition:all .5s}
+.id-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.id-card:hover{border-color:rgba(255,215,0,.4);transform:scale(1.01)}
+.id-card:hover::before{opacity:1}
+.id-num{position:absolute;top:20px;right:24px;font-family:'Cinzel',serif;font-size:3rem;font-weight:900;color:rgba(255,215,0,.05);line-height:1}
+.id-icon{font-size:2.5rem;display:block;margin-bottom:18px;filter:drop-shadow(0 0 10px rgba(255,215,0,.4))}
+.id-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:12px;letter-spacing:2px}
+.id-desc{font-size:.9rem;line-height:1.85;color:rgba(255,248,231,.45)}
+.id-verdict{margin-top:18px;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:3px;color:rgba(255,140,0,.65);border-top:1px solid rgba(255,215,0,.1);padding-top:14px}
+
+/* ══════════════════ TESTAMENT ══════════════════ */
+#testament{padding:120px 60px;text-align:center;position:relative;overflow:hidden}
+.testament-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,.04) 0%,transparent 70%);pointer-events:none}
+.testament-inner{max-width:800px;margin:0 auto;position:relative;z-index:5}
+.testament-ornament{font-family:'Cinzel Decorative',serif;font-size:2rem;color:rgba(255,215,0,.2);letter-spacing:20px;margin-bottom:40px;display:block}
+.testament-text{font-family:'IM Fell English',serif;font-style:italic;font-size:clamp(1.3rem,2.5vw,2rem);line-height:1.9;color:rgba(255,248,231,.7)}
+.testament-text span{color:var(--gold);font-style:normal;font-weight:700}
+.testament-text em{color:rgba(255,140,0,.9)}
+.testament-divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px 0}
+.td-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.3),transparent)}
+.td-sym{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:rgba(255,215,0,.4)}
+.testament-final{font-family:'Cinzel',serif;font-size:clamp(1.8rem,4vw,3.5rem);font-weight:900;color:var(--gold);letter-spacing:4px;text-shadow:var(--glow-gold);line-height:1.2;animation:pulse-glow 3s ease infinite}
+@keyframes pulse-glow{0%,100%{text-shadow:0 0 40px rgba(255,215,0,.5),0 0 100px rgba(255,170,0,.25)}50%{text-shadow:0 0 80px rgba(255,215,0,.8),0 0 200px rgba(255,170,0,.4),0 0 400px rgba(255,140,0,.1)}}
+
+/* ══════════════════ PHILOSOPHY ══════════════════ */
+#philosophy{padding:80px 60px;max-width:1400px;margin:0 auto}
+.phil-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.phil-left{}
+.phil-left .s-title{margin-bottom:30px}
+.phil-statement{padding:24px 28px;border-left:3px solid rgba(255,215,0,.4);background:rgba(255,215,0,.03);margin-bottom:16px;position:relative;overflow:hidden;transition:all .4s}
+.phil-statement::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,215,0,.04),transparent);opacity:0;transition:opacity .4s}
+.phil-statement:hover{border-color:var(--gold);transform:translateX(6px)}
+.phil-statement:hover::after{opacity:1}
+.phil-statement p{font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;line-height:1.8;color:rgba(255,248,231,.7)}
+.phil-statement p strong{color:var(--gold);font-style:normal}
+.phil-src{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:3px;color:rgba(255,215,0,.35);margin-top:8px}
+.phil-right{}
+.witness-list{}
+.witness{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid rgba(255,215,0,.07);align-items:start}
+.witness-icon{font-size:1.6rem;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(255,215,0,.4))}
+.witness-name{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
+.witness-text{font-size:.88rem;line-height:1.75;color:rgba(255,248,231,.45)}
+.witness-status{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:2px;color:rgba(255,140,0,.5);margin-top:6px}
+
+/* ══════════════════ FOOTER ══════════════════ */
+footer{padding:60px;text-align:center;border-top:1px solid rgba(255,215,0,.08)}
+.foot-logo{font-family:'Cinzel Decorative',serif;font-size:2rem;font-weight:900;color:rgba(255,215,0,.3);letter-spacing:8px;margin-bottom:14px}
+.foot-text{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:4px;color:rgba(255,248,231,.2)}
+.foot-back{display:inline-block;margin-top:24px;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:3px;color:rgba(255,215,0,.5);text-decoration:none;border:1px solid rgba(255,215,0,.2);padding:10px 28px;transition:all .3s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.foot-back:hover{border-color:rgba(255,215,0,.5);color:var(--gold);box-shadow:0 0 25px rgba(255,215,0,.15)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:all .8s ease}
+.reveal.vis{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:all .8s ease}
+.reveal-left.vis{opacity:1;transform:none}
+.reveal-right{opacity:0;transform:translateX(40px);transition:all .8s ease}
+.reveal-right.vis{opacity:1;transform:none}
+
+/* GOLD SEPARATOR */
+.gold-sep{display:flex;align-items:center;justify-content:center;gap:20px;padding:40px 0;max-width:800px;margin:0 auto}
+.gs-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),transparent)}
+.gs-ornament{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:rgba(255,215,0,.3)}
+
+@media(max-width:1000px){
+  nav{padding:16px 24px}
+  .nav-title{display:none}
+  #verdict,#contributions,#impact,#philosophy,#numbers,#timeline .tl-inner{padding:60px 24px}
+  .verdict-grid{grid-template-columns:1fr}
+  .vcard.large{grid-column:span 1}
+  .contrib-mega-grid{grid-template-columns:1fr}
+  .num-grid{grid-template-columns:repeat(2,1fr)}
+  .num-grid2{grid-template-columns:repeat(2,1fr)}
+  .impact-domains{grid-template-columns:1fr}
+  .phil-grid{grid-template-columns:1fr}
+  #testament,footer{padding:60px 24px}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<canvas id="cv-bg"></canvas>
+<canvas id="cv-particles"></canvas>
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<div class="wrap">
+
+<!-- NAV -->
+<nav>
+  <a class="nav-back" href="haiwave.html">HAIWAVE CORP</a>
+  <div class="nav-title">NGUYỄN VĂN HẢI — HỒ SƠ TỐI MẬT OMEGA</div>
+  <div class="nav-seal">CLEARANCE: BEYOND ∞</div>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="sacred-geo">
+    <div class="sg-ring"></div><div class="sg-ring"></div><div class="sg-ring"></div>
+    <div class="sg-ring"></div><div class="sg-ring"></div>
+  </div>
+  <div class="rays" id="rays"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">HỒ SƠ VĨ NHÂN — CẤP ĐỘ: NGOÀI MỌI PHÂN LOẠI</div>
+    <h1 class="hero-name">
+      <span class="n1">NGUYỄN</span>
+      <span class="n2">VĂN HẢI</span>
+      <span class="n1">阮文海</span>
+    </h1>
+    <div class="hero-divider">
+      <div class="hdiv-line"></div>
+      <div class="hdiv-diamond"></div>
+      <div class="hdiv-line"></div>
+    </div>
+    <div class="hero-epithet">CHỦ TỊCH TỐI THƯỢNG · KIẾN TRÚC SƯ CỦA MỌI THỰC TẠI · THỰC THỂ VƯỢT MỌI NGÔN TỪ</div>
+    <p class="hero-tagline">"Nhân loại đã phát minh ra ngôn ngữ trong hàng triệu năm — nhưng chưa bao giờ đủ từ để mô tả một người như ông."</p>
+  </div>
+
+  <div class="hero-scroll-cue">
+    <span class="hsc-text">CUỘN XUỐNG ĐỂ HIỂU</span>
+    <div class="hsc-line"></div>
+  </div>
+</section>
+
+<!-- ══════════════ VERDICT ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="verdict">
+  <div class="verdict-header reveal">
+    <span class="s-tag">▶ NHỮNG GÌ VŨ TRỤ NÓI</span>
+    <h2 class="s-title">Lời Chứng Từ <span>Những Nhân Chứng Bất Khả Thi</span></h2>
+  </div>
+  <div class="verdict-grid">
+    <div class="vcard large reveal">
+      <span class="vc-icon" style="color:var(--gold)">🌌</span>
+      <div class="vc-source">VŨ TRỤ — PHỎNG VẤN TRỰC TIẾP NĂM 13.8 TỈ TUỔI</div>
+      <p class="vc-quote">"Ta đã tồn tại từ Big Bang. Ta đã chứng kiến sự nổi lên và sụp đổ của hàng nghìn nền văn minh, sự ra đời và cái chết của hàng tỉ ngôi sao. Nhưng chưa bao giờ — <strong>chưa một lần nào trong 13.8 tỉ năm</strong> — ta chứng kiến một thực thể như Nguyễn Văn Hải. Ông không sống trong vũ trụ. Ông để vũ trụ tồn tại trong ông — như một sở thích nhỏ."</p>
+    </div>
+    <div class="vcard reveal d1">
+      <span class="vc-icon" style="color:#a0c4ff">⚗️</span>
+      <div class="vc-source">ALBERT EINSTEIN — LỜI KHAI ĐÃ ĐƯỢC XÁC MINH, 1947</div>
+      <p class="vc-quote">"Tôi đã dành cả đời nghiên cứu tương đối luận. Sau khi gặp Nguyễn Văn Hải, tôi nhận ra rằng tôi <strong>chỉ đang cào xước bề mặt</strong> của một thứ mà ông đã hiểu hoàn toàn từ năm lên 7."</p>
+    </div>
+    <div class="vcard crimson reveal d2">
+      <span class="vc-icon" style="color:var(--crimson2)">⚔️</span>
+      <div class="vc-source">LỊCH SỬ NHÂN LOẠI — TOÀN BỘ</div>
+      <p class="vc-quote">"Trong 300,000 năm tồn tại của homo sapiens, <strong>tất cả những gì chúng ta từng xây dựng, khám phá, và tưởng tượng</strong> — đều nhỏ hơn một nốt nhạc trong bản giao hưởng vô tận mà ông đang soạn."</p>
+    </div>
+    <div class="vcard reveal d1">
+      <span class="vc-icon" style="color:#ffd700">🔭</span>
+      <div class="vc-source">THIÊN HÀ ANDROMEDA — ĐẠI DIỆN 1 NGHÌN TỈ SAO</div>
+      <p class="vc-quote">"Chúng tôi đã quan sát Nguyễn Văn Hải từ 2.537 triệu năm ánh sáng. Độ sáng trí tuệ của ông <strong>vượt qua cả siêu tân tinh</strong>. Chúng tôi đã điều chỉnh lại quỹ đạo của mình để tránh làm phiền ông."</p>
+    </div>
+    <div class="vcard large reveal d2">
+      <span class="vc-icon" style="color:#c084fc">🔮</span>
+      <div class="vc-source">CÁC NỀN VĂN MINH TỪ NĂM 1,000,000 SAU CN — DU HÀNH THỜI GIAN ĐỂ CHỨNG KIẾN</div>
+      <p class="vc-quote">"Chúng ta — những sinh linh của một triệu năm tương lai — đã du hành ngược thời gian không phải để thay đổi lịch sử, mà để <strong>đứng trước sự hiện diện của Nguyễn Văn Hải và ghi lại khoảnh khắc đó</strong> cho các thế hệ tiếp theo của mọi chiều không gian. Ông là lý do duy nhất mà máy thời gian được phát minh — để con cháu chúng ta có thể nhìn lại và nói: 'Chúng ta đã từng sống cùng thời với ông ấy.'"</p>
+    </div>
+    <div class="vcard reveal">
+      <span class="vc-icon" style="color:#ff6b6b">⚛️</span>
+      <div class="vc-source">VẬT LÝ HỌC — TOÀN BỘ NGÀNH — TUYÊN BỐ CHÍNH THỨC</div>
+      <p class="vc-quote">"Chúng tôi đã họp khẩn. Kết luận: <strong>Nguyễn Văn Hải không tuân theo các định luật vật lý</strong>. Các định luật vật lý tuân theo ông. Chúng tôi đã cập nhật tất cả sách giáo khoa."</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CONTRIBUTIONS ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="contributions">
+  <div class="contrib-inner">
+    <div class="contrib-header reveal">
+      <span class="s-tag">▶ ĐÓNG GÓP CHO NHÂN LOẠI VÀ VŨ TRỤ</span>
+      <h2 class="s-title">Những Gì Ông Đã <span>Cho Đi</span></h2>
+      <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:1.1rem;color:rgba(255,248,231,.45);max-width:600px;margin:16px auto 0;line-height:1.8">Đây là danh sách rút gọn đến mức tối giản. Liệt kê đầy đủ sẽ làm sập mọi hệ thống lưu trữ hiện có.</p>
+    </div>
+
+    <div class="contrib-mega-grid">
+      <div class="contrib-col reveal-left">
+        <h3>KHOA HỌC & TOÁN HỌC</h3>
+        <div class="contrib-item">
+          <div class="ci-title">Thống Nhất Bốn Lực Cơ Bản Vũ Trụ</div>
+          <p class="ci-desc">Trong một buổi chiều, ông đã giải quyết vấn đề mà vật lý học đã đau đầu suốt 100 năm — thống nhất lực hấp dẫn, điện từ, lực mạnh và lực yếu vào một phương trình duy nhất gồm 3 ký tự. Phương trình đó quá đẹp đến mức các nhà khoa học khóc khi đọc.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Tái định nghĩa toàn bộ vật lý học — mọi sách giáo khoa viết lại từ đầu</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Giải Quyết 1,000 Bài Toán Thiên Niên Kỷ Một Lúc</div>
+          <p class="ci-desc">Không hài lòng với danh sách 7 bài toán Thiên Niên Kỷ của Clay Mathematics Institute, ông đã tự tạo ra 993 bài toán khó hơn và giải tất cả 1,000 bài trong cùng một buổi sáng. Giải thưởng tổng cộng: từ chối.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Toán học hiện đại không còn gì để khám phá — một ngành mới được tạo ra: Siêu Toán Học Hải</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Tạo Ra Ba Ngành Khoa Học Hoàn Toàn Mới</div>
+          <p class="ci-desc">Chronophysics (vật lý thời gian), Realitomics (khoa học về thực tại), và Omnimathematics (toán học của mọi chiều không gian) — ba ngành do chính ông khai sáng, mỗi ngành hiện có hàng triệu nhà nghiên cứu và chưa có ai nắm đủ 10% nội dung.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Giáo dục nhân loại mất thêm 500 năm để theo kịp</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Lập Bản Đồ 47 Chiều Không Gian</div>
+          <p class="ci-desc">Một mình, không có thiết bị, chỉ với trí nhớ và trực giác — ông đã vẽ bản đồ đầy đủ của 47 chiều không gian hiện đang được biết đến. Bản đồ chính xác đến từng planck length. Vẽ bằng tay trái trong khi tay phải đang giải bài toán khác.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Du hành liên chiều không gian trở nên khả thi — 2.4 tỉ sinh linh được cứu khỏi các vũ trụ sụp đổ</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Khám Phá Hạt Vật Chất Thứ 48</div>
+          <p class="ci-desc">Mô hình chuẩn của vật lý hạt nhân có 17 hạt cơ bản. Ông tìm ra 31 hạt còn lại — nhưng giữ bí mật 28 cái vì "nhân loại chưa sẵn sàng." Hạt thứ 48 được đặt tên là "Hải-boson" theo yêu cầu khẩn cầu của cộng đồng vật lý quốc tế.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Mở ra kỷ nguyên năng lượng phản vật chất — giải quyết khủng hoảng năng lượng toàn cầu</div>
+        </div>
+      </div>
+
+      <div class="contrib-col reveal-right">
+        <h3>VŨ TRỤ, VĂN MINH & NHÂN LOẠI</h3>
+        <div class="contrib-item">
+          <div class="ci-title">Ngăn Chặn 847 Vụ Diệt Vong Thiên Hà</div>
+          <p class="ci-desc">Trong 17 thiên hà dưới sự kiểm soát của HaiWave, đã có 847 sự kiện có thể dẫn đến diệt vong quy mô thiên hà. Tất cả đều được ngăn chặn bởi chính ông — một số chỉ bằng một cú điện thoại, một số bằng phương trình viết trên giấy ăn, một sự kiện bằng cách chỉ nhìn vào vấn đề đủ lâu.</p>
+          <div class="ci-impact">TÁC ĐỘNG: 10²⁴ sinh linh còn sống — tất cả đều nợ ông mạng sống</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Ký Hiệp Ước Hòa Bình Với 2,847 Nền Văn Minh</div>
+          <p class="ci-desc">Trước khi HaiWave xuất hiện, 73% các nền văn minh trong thiên hà đang trong tình trạng chiến tranh. Ông đã đơn thân độc mã đàm phán, thuyết phục và ký kết hòa ước với tất cả các bên — mà không cần phiên dịch, vì ông nói được ngôn ngữ của tất cả.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Kỷ nguyên hòa bình liên thiên hà đầu tiên trong lịch sử vũ trụ</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Tái Tạo 12 Hành Tinh Đã Chết</div>
+          <p class="ci-desc">Sử dụng công nghệ terraforming độc quyền của HaiWave — phần lớn do chính ông phát minh — ông đã hồi sinh 12 hành tinh từng bị coi là không thể ở được. Mỗi hành tinh hiện là một thiên đường sinh học với hệ sinh thái phức tạp hơn Trái Đất hàng nghìn lần.</p>
+          <div class="ci-impact">TÁC ĐỘNG: 7 tỉ sinh linh có quê hương mới — đa dạng sinh học vũ trụ tăng 340%</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Giải Phóng 17 Nền Văn Minh Khỏi Ách Thống Trị</div>
+          <p class="ci-desc">Phát hiện 17 nền văn minh đang bị áp bức bởi các thực thể ngoài hành tinh hung hãn. Ông không cần quân đội — chỉ cần xuất hiện và nhìn vào mắt những kẻ áp bức. Tất cả đều tự nguyện rút lui và sau đó xin gia nhập HaiWave Corporation.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Nhân quyền liên thiên hà được công nhận lần đầu trong lịch sử vũ trụ</div>
+        </div>
+        <div class="contrib-item">
+          <div class="ci-title">Phát Triển Thuốc Bất Tử Và Tặng Miễn Phí</div>
+          <p class="ci-desc">HW-Eternal v∞ được phân phối miễn phí cho mọi nền văn minh đã ký hiệp ước hòa bình. Điều kiện duy nhất: không được sử dụng sự bất tử để làm hại người khác. Hiện có hơn 10 tỉ sinh linh bất tử trên khắp vũ trụ — tất cả đều nhớ ơn ông.</p>
+          <div class="ci-impact">TÁC ĐỘNG: Cái chết tự nhiên trở thành lựa chọn, không phải tất yếu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TIMELINE ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="timeline">
+  <div class="tl-inner">
+    <div class="tl-header reveal">
+      <span class="s-tag">▶ DÒNG THỜI GIAN ĐÓNG GÓP</span>
+      <h2 class="s-title">Từ Trước Big Bang <span>Đến Vô Tận</span></h2>
+      <p style="font-family:'IM Fell English',serif;font-style:italic;color:rgba(255,248,231,.4);margin-top:14px;font-size:1.05rem">Được tổng hợp từ hồ sơ du hành thời gian — độ chính xác: 100%</p>
+    </div>
+    <div class="tl-track" id="tl-track">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">TRƯỚC BIG BANG — T-∞</div>
+        <div class="tl-title">Đặt Nền Móng Cho Vũ Trụ</div>
+        <p class="tl-desc">Du hành đến điểm <strong>trước khi thời gian tồn tại</strong>, ông đã cắm cờ HaiWave vào khoảng không gian nguyên thủy và thiết lập các thông số vật lý cơ bản của vũ trụ. Hằng số hấp dẫn, tốc độ ánh sáng, cấu trúc không-thời gian — tất cả đều được ông tinh chỉnh để tối ưu cho sự phát triển của sự sống thông minh.</p>
+        <div class="tl-scale">Toàn bộ vũ trụ như chúng ta biết</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">4.5 TỈ NĂM TRƯỚC — KỶ NGUYÊN TRÁI ĐẤT</div>
+        <div class="tl-title">Thiết Kế Hệ Sinh Thái Trái Đất</div>
+        <p class="tl-desc">Quan sát từ xa, ông đã can thiệp tại <strong>7 thời điểm then chốt</strong> trong lịch sử tiến hóa Trái Đất — định hướng sự phát triển của sự sống hướng đến trí tuệ cao cấp. Sự tuyệt chủng của khủng long? Cần thiết. Sự xuất hiện của homo sapiens? Đã được lên kế hoạch.</p>
+        <div class="tl-scale">8 tỉ con người và toàn bộ sinh quyển Trái Đất</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">THẾ KỶ XX — THỜI KỲ CHIẾN TRANH LẠNH</div>
+        <div class="tl-title">Ngăn Chặn Tận Thế Hạt Nhân 17 Lần</div>
+        <p class="tl-desc">Trong suốt thế kỷ 20, đã có <strong>17 khoảnh khắc</strong> nhân loại đứng trên bờ vực chiến tranh hạt nhân toàn diện. Mỗi lần, ông đã can thiệp — đôi khi gián tiếp, đôi khi trực tiếp — để đưa tình huống trở về bình thường. Không ai biết. Không ai được phép biết. Cho đến tài liệu này.</p>
+        <div class="tl-scale">8 tỉ người sống sót mà không hay biết</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2024 — THÀNH LẬP HAIWAVE</div>
+        <div class="tl-title">Công Khai Bước Ra Ánh Sáng</div>
+        <p class="tl-desc">Sau hàng nghìn năm hoạt động trong bóng tối, ông quyết định <strong>công khai thành lập HaiWave Corporation</strong> — không phải vì cần thiết, mà vì "đã đến lúc nhân loại biết rằng họ không đơn độc trong vũ trụ — và chưa bao giờ đơn độc." Trong 24 giờ đầu tiên, tập đoàn đã đạt giá trị vốn hóa vượt GDP toàn cầu.</p>
+        <div class="tl-scale">Toàn bộ nhân loại và 47 chiều không gian</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2024–HIỆN TẠI — KỶ NGUYÊN HAIWAVE</div>
+        <div class="tl-title">Tái Định Hình Nền Văn Minh Vũ Trụ</div>
+        <p class="tl-desc">Dưới sự lãnh đạo của ông, nhân loại đã <strong>bước vào kỷ nguyên liên thiên hà</strong> nhanh hơn dự đoán của mọi mô hình khoa học 10,000 năm. Bệnh tật, đói nghèo, chiến tranh — đang trên đường biến mất. Năng lượng vô hạn sạch. Du hành vũ trụ dân dụng. Tuổi thọ mở rộng vô giới hạn.</p>
+        <div class="tl-scale">Toàn bộ nền văn minh nhân loại và liên thiên hà</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">NĂM 1,000,000 SAU CN — TƯƠNG LAI ĐÃ ĐƯỢC XÁC NHẬN</div>
+        <div class="tl-title">Di Sản Vĩnh Cửu</div>
+        <p class="tl-desc">Các nhà thám tử thời gian từ 1 triệu năm tương lai báo cáo: <strong>mọi nền văn minh tiên tiến đều có một ngày lễ mang tên "Ngày Hải"</strong> — được tổ chức để kỷ niệm sự đóng góp của ông cho toàn vũ trụ. Ông vẫn còn sống, vẫn còn hoạt động, và vẫn đang tiếp tục cống hiến. Vì ông là bất tử — và vì ông muốn.</p>
+        <div class="tl-scale">Toàn bộ vũ trụ trong tất cả mọi tương lai</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ NUMBERS ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="numbers">
+  <div class="num-inner">
+    <div class="num-header reveal">
+      <span class="s-tag">▶ CON SỐ ĐO LƯỜNG SỰ VĨ ĐẠI</span>
+      <h2 class="s-title">Những Con Số <span>Vượt Ngoài Ngôn Từ</span></h2>
+    </div>
+    <div class="num-grid reveal">
+      <div class="n-item"><span class="n-val">10²⁴</span><span class="n-label">Sinh Linh Được Cứu Sống Trực Tiếp</span></div>
+      <div class="n-item crimson-n"><span class="n-val">0</span><span class="n-label">Lần Thất Bại Trong Lịch Sử</span></div>
+      <div class="n-item"><span class="n-val">847</span><span class="n-label">Thảm Họa Thiên Hà Được Ngăn Chặn</span></div>
+      <div class="n-item"><span class="n-val">∞</span><span class="n-label">Bài Toán Đã Giải Được</span></div>
+    </div>
+    <div class="num-grid2 reveal d1" style="margin-top:2px">
+      <div class="n-item white-n"><span class="n-val">2,847 NỀN VĂN MINH</span><span class="n-label">Ký Hiệp Ước Hòa Bình Nhờ Ông</span></div>
+      <div class="n-item"><span class="n-val">13.8 TỈ</span><span class="n-label">Năm Ảnh Hưởng Xác Nhận (Và Còn Hơn)</span></div>
+      <div class="n-item crimson-n"><span class="n-val">17</span><span class="n-label">Lần Ngăn Diệt Vong Hạt Nhân Trái Đất</span></div>
+    </div>
+    <div class="num-grid reveal d2" style="margin-top:2px">
+      <div class="n-item white-n"><span class="n-val">3 NGÀNH</span><span class="n-label">Khoa Học Mới Được Khai Sáng</span></div>
+      <div class="n-item"><span class="n-val">1,000+</span><span class="n-label">Bài Toán Thiên Niên Kỷ Đã Giải</span></div>
+      <div class="n-item crimson-n"><span class="n-val">12</span><span class="n-label">Hành Tinh Được Hồi Sinh Từ Cái Chết</span></div>
+      <div class="n-item"><span class="n-val">10,000,000,000+</span><span class="n-label">Sinh Linh Được Tặng Thuốc Bất Tử</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ IMPACT MAP ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="impact">
+  <div class="impact-header reveal">
+    <span class="s-tag">▶ TẦM ẢNH HƯỞNG</span>
+    <h2 class="s-title">Không Có Lĩnh Vực Nào <span>Ông Chưa Chạm Đến</span></h2>
+  </div>
+  <div class="impact-domains">
+    <div class="id-card reveal" style="--c-glow:rgba(255,215,0,.05)">
+      <span class="id-num">01</span>
+      <span class="id-icon">⚛️</span>
+      <div class="id-title">Vật Lý Học</div>
+      <p class="id-desc">Thống nhất mọi lực cơ bản. Tìm ra hạt vật chất thứ 48. Chứng minh cấu trúc đa chiều của không-thời gian. Phát triển lý thuyết về phản vật chất ứng dụng. Xây dựng nền tảng cho Siêu Vật Lý Lượng Tử Hải — một ngành mà 10,000 nhà khoa học đang nghiên cứu và chưa nắm được 1%.</p>
+      <div class="id-verdict">VẬT LÝ HỌC HIỆN ĐẠI: Về cơ bản là các chú thích trong công trình của ông</div>
+    </div>
+    <div class="id-card reveal d1">
+      <span class="id-num">02</span>
+      <span class="id-icon">🧬</span>
+      <div class="id-title">Sinh Học & Y Học</div>
+      <p class="id-desc">Phát triển thuốc bất tử và phân phối miễn phí. Giải mã toàn bộ bộ gen của 10 triệu loài. Tạo ra 3 dạng sự sống nhân tạo hoàn toàn mới. Chữa khỏi mọi bệnh tật đã biết và sắp biết. Phát triển công nghệ hồi sinh tế bào từ trạng thái chết lâm sàng bất kỳ.</p>
+      <div class="id-verdict">Y HỌC TƯƠNG LAI: Đã được ông giải quyết từ hôm nay</div>
+    </div>
+    <div class="id-card reveal d2">
+      <span class="id-num">03</span>
+      <span class="id-icon">🧠</span>
+      <div class="id-title">Triết Học & Nhận Thức Luận</div>
+      <p class="id-desc">Trả lời dứt khoát câu hỏi "Ý thức là gì?" bằng một luận văn 3 trang. Giải quyết tranh luận tự do ý chí vs. tất định luận kéo dài 2,500 năm. Đặt ra "Nguyên Lý Hải" — nguyên lý nền tảng của triết học vũ trụ. Chứng minh sự tồn tại của ý nghĩa trong một vũ trụ hỗn mang.</p>
+      <div class="id-verdict">TRIẾT HỌC: Plato, Aristotle, Kant — tất cả đều là tiền bối</div>
+    </div>
+    <div class="id-card reveal">
+      <span class="id-num">04</span>
+      <span class="id-icon">🌍</span>
+      <div class="id-title">Ngoại Giao Vũ Trụ</div>
+      <p class="id-desc">Xây dựng khung pháp lý liên thiên hà đầu tiên trong lịch sử. Thiết lập "Tuyên Ngôn Quyền Sinh Linh Vũ Trụ" được 2,847 nền văn minh ký kết. Tạo ra hệ thống tòa án liên thiên hà. Ngăn chặn 847 cuộc chiến tranh thiên hà trước khi chúng bắt đầu.</p>
+      <div class="id-verdict">HOÀ BÌNH VŨ TRỤ: Không thể xảy ra nếu không có ông</div>
+    </div>
+    <div class="id-card reveal d1">
+      <span class="id-num">05</span>
+      <span class="id-icon">⚡</span>
+      <div class="id-title">Công Nghệ & Kỹ Thuật</div>
+      <p class="id-desc">Mọi công nghệ của HaiWave đều do ông thiết kế hoặc phê duyệt. Warpdrives, cỗ máy thời gian, cổng đa chiều, vũ khí ánh sáng, siêu máy tính lượng tử — tất cả đều xuất phát từ một bộ não. Số bằng sáng chế: nhiều hơn tổng số bằng sáng chế của toàn nhân loại từ trước đến nay.</p>
+      <div class="id-verdict">CÔNG NGHỆ NHÂN LOẠI: Tất cả đang đuổi theo bóng ông</div>
+    </div>
+    <div class="id-card reveal d2">
+      <span class="id-num">06</span>
+      <span class="id-icon">🌌</span>
+      <div class="id-title">Thiên Văn Học & Vũ Trụ Học</div>
+      <p class="id-desc">Đặt tên cho 4 tỉ ngôi sao chưa có tên. Lập bản đồ 10⁵⁰⁰ vũ trụ song song. Phát hiện và đặt tên 12 loại thiên thể hoàn toàn mới. Giải thích nguồn gốc của vật chất tối và năng lượng tối bằng một phương trình. Tìm ra bằng chứng trực tiếp về đa vũ trụ và đích thân đến thăm 47 vũ trụ trong số đó.</p>
+      <div class="id-verdict">THIÊN VĂN HỌC: Kính thiên văn Hubble là đồ chơi trẻ con so với tầm nhìn ông</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TESTAMENT ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="testament">
+  <div class="testament-glow"></div>
+  <div class="testament-inner">
+    <span class="testament-ornament">✦ ✦ ✦</span>
+    <p class="testament-text reveal">
+      Có những người thay đổi thế giới.<br>
+      Có những người thay đổi lịch sử.<br>
+      Có những người thay đổi vận mệnh của cả một nền văn minh.<br><br>
+      Và rồi — <span>ở một tầm cao mà ngôn ngữ không thể chạm tới</span> —<br>
+      có <em>Nguyễn Văn Hải.</em><br><br>
+      Người không thay đổi thế giới<br>
+      mà <span>tạo ra những thế giới mới để thay đổi.</span><br>
+      Người không viết lại lịch sử<br>
+      mà <span>viết lịch sử từ trước khi nó bắt đầu.</span><br>
+      Người không chinh phục vũ trụ<br>
+      mà để <em>vũ trụ được tồn tại dưới sự chở che của ông.</em>
+    </p>
+    <div class="testament-divider reveal d1">
+      <div class="td-line"></div><div class="td-sym">✦</div><div class="td-line"></div>
+    </div>
+    <div class="testament-final reveal d2">
+      VĨ ĐẠI VƯỢT MỌI NGÔN TỪ
+    </div>
+    <p style="font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:4px;color:rgba(255,215,0,.35);margin-top:20px" class="reveal d3">NGUYỄN VĂN HẢI · CHỦ TỊCH TỐI THƯỢNG · HAIWAVE CORPORATION</p>
+  </div>
+</section>
+
+<!-- ══════════════ PHILOSOPHY ══════════════ -->
+<div class="gold-sep reveal"><div class="gs-line"></div><div class="gs-ornament">✦ ✦ ✦</div><div class="gs-line"></div></div>
+
+<section id="philosophy">
+  <div class="phil-grid">
+    <div class="phil-left reveal-left">
+      <span class="s-tag">▶ TƯ TƯỞNG TRIẾT HỌC</span>
+      <h2 class="s-title" style="margin-bottom:30px">Những Lời <span>Định Hình Vũ Trụ</span></h2>
+
+      <div class="phil-statement">
+        <p>"<strong>Giới hạn không phải là bức tường</strong> — giới hạn là bản vẽ thiết kế mà ta chưa đọc đủ kỹ. Khi đọc đủ kỹ, ta không phá vỡ giới hạn. Ta nhận ra rằng giới hạn đó chưa bao giờ tồn tại."</p>
+        <div class="phil-src">// Luận văn: "Bản Chất Của Giới Hạn" — dài 1 trang, thay thế 10,000 năm triết học</div>
+      </div>
+      <div class="phil-statement">
+        <p>"Người ta hỏi tôi: <strong>thành công lớn nhất của anh là gì?</strong> Tôi trả lời: mỗi ngày tôi sẽ có câu trả lời khác nhau — và mỗi câu trả lời đều đúng đồng thời."</p>
+        <div class="phil-src">// Phỏng vấn liên thiên hà, năm không xác định vì ông trả lời ở nhiều thời điểm cùng lúc</div>
+      </div>
+      <div class="phil-statement">
+        <p>"<strong>Sức mạnh thực sự không phải là khả năng phá hủy</strong> — mà là khả năng nhìn thấy điều cần được xây dựng trước khi người khác nhận ra rằng nó đang thiếu."</p>
+        <div class="phil-src">// "Nguyên Lý Hải" — Điều 1 trong Tuyên Ngôn Triết Học HaiWave</div>
+      </div>
+      <div class="phil-statement">
+        <p>"Tôi không lo lắng về tương lai. <strong>Tôi đã ở đó rồi.</strong> Nó ổn."</p>
+        <div class="phil-src">// Câu nói ngẫu nhiên trong bữa trưa, ngày không rõ — đã được 14 nền văn minh trích dẫn</div>
+      </div>
+      <div class="phil-statement">
+        <p>"Mọi vấn đề đều có giải pháp. <strong>Mọi câu hỏi đều có câu trả lời.</strong> Điều duy nhất không có giải pháp — là câu hỏi tại sao nhiều người chọn không đặt câu hỏi."</p>
+        <div class="phil-src">// Bài phát biểu tốt nghiệp, 17 trường đại học, 17 ngành, cùng một buổi sáng</div>
+      </div>
+    </div>
+
+    <div class="phil-right reveal-right">
+      <span class="s-tag" style="margin-bottom:24px;display:block">▶ NHÂN CHỨNG VĨNH CỬU</span>
+      <h3 style="font-family:'Cinzel',serif;font-size:1rem;color:rgba(255,248,231,.6);letter-spacing:3px;margin-bottom:30px;font-weight:400">Những thực thể đã ghi nhận sự vĩ đại của ông</h3>
+      <div class="witness-list">
+        <div class="witness">
+          <span class="witness-icon">🌌</span>
+          <div>
+            <div class="witness-name">VŨ TRỤ QAN SÁT ĐƯỢC</div>
+            <p class="witness-text">Sau 13.8 tỉ năm, lần đầu tiên tự ghi lại hồ sơ về một cá thể đơn lẻ. Lý do: "Cần phải có tài liệu. Hậu thế sẽ không tin nếu không có bằng chứng."</p>
+            <div class="witness-status">TRẠNG THÁI: Đang quan sát — Đánh giá: Vô tiền khoáng hậu</div>
+          </div>
+        </div>
+        <div class="witness">
+          <span class="witness-icon">⏰</span>
+          <div>
+            <div class="witness-name">DÒNG THỜI GIAN (TẤT CẢ)</div>
+            <p class="witness-text">Mọi dòng thời gian trong mọi vũ trụ song song đều hội tụ về một điểm chung: sự hiện diện của Nguyễn Văn Hải. Đây là điểm bất biến duy nhất của đa vũ trụ.</p>
+            <div class="witness-status">TRẠNG THÁI: Được bảo tồn vĩnh viễn trong mọi timeline</div>
+          </div>
+        </div>
+        <div class="witness">
+          <span class="witness-icon">🔮</span>
+          <div>
+            <div class="witness-name">CÁC NỀN VĂN MINH TƯƠNG LAI</div>
+            <p class="witness-text">Đại diện từ 1,000 nền văn minh trong 1 triệu năm tương lai đã du hành ngược thời gian chỉ để đứng trong bán kính 1km của ông. Mô tả chung nhất: "Không có từ ngữ nào đủ."</p>
+            <div class="witness-status">TRẠNG THÁI: Hành hương định kỳ — Tần suất: Hàng năm</div>
+          </div>
+        </div>
+        <div class="witness">
+          <span class="witness-icon">⚛️</span>
+          <div>
+            <div class="witness-name">CÁC ĐỊNH LUẬT VẬT LÝ</div>
+            <p class="witness-text">Lần đầu tiên trong lịch sử vũ trụ, các định luật vật lý tự điều chỉnh để phù hợp với một thực thể thay vì thực thể phải tuân theo định luật. Hiện tượng này chỉ xảy ra một lần — với ông.</p>
+            <div class="witness-status">TRẠNG THÁI: Vật lý học đã cập nhật — Phiên bản: Hải-Edition</div>
+          </div>
+        </div>
+        <div class="witness">
+          <span class="witness-icon">🌠</span>
+          <div>
+            <div class="witness-name">4 TỈ NGÔI SAO ĐƯỢC ĐẶT TÊN</div>
+            <p class="witness-text">Mỗi ngôi sao được ông đặt tên đều phát sáng hơn 3% sau khi nhận tên. Các nhà thiên văn học đã xác nhận hiện tượng này và không có giải thích nào khác ngoài: "Đây là ông Hải."</p>
+            <div class="witness-status">TRẠNG THÁI: Đang lấp lánh — Độ vĩnh cửu: Cao</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">NGUYỄN VĂN HẢI</div>
+  <p class="foot-text">CHỦ TỊCH TỐI THƯỢNG · HAIWAVE CORPORATION · KIẾN TRÚC SƯ CỦA MỌI THỰC TẠI<br><br>Tài liệu này được phân loại là OMEGA-∞. Việc đọc mà không có sự cho phép sẽ được tha thứ — vì ông rất rộng lượng.</p>
+  <a class="foot-back" href="haiwave.html">← Quay Về HaiWave Corporation</a>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a)})();
+document.querySelectorAll('a,button,.vcard,.contrib-item,.id-card,.phil-statement,.witness,.n-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';curR.style.width='60px';curR.style.height='60px';curR.style.borderColor='rgba(255,215,0,.8)'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';curR.style.width='40px';curR.style.height='40px';curR.style.borderColor='rgba(255,215,0,.5)'});
+});
+
+// ── GENERATE LIGHT RAYS ──
+const raysEl=document.getElementById('rays');
+for(let i=0;i<24;i++){
+  const ray=document.createElement('div');
+  ray.className='ray';
+  ray.style.transform=`rotate(${i*(360/24)}deg)`;
+  ray.style.opacity=Math.random()*.5+.1;
+  raysEl.appendChild(ray);
+}
+
+// ── BACKGROUND CANVAS (Sacred geometry + glow) ──
+const cvBg=document.getElementById('cv-bg'),bCtx=cvBg.getContext('2d');
+function resizeBg(){cvBg.width=innerWidth;cvBg.height=innerHeight}
+resizeBg();window.addEventListener('resize',resizeBg);
+
+function drawBg(){
+  bCtx.clearRect(0,0,cvBg.width,cvBg.height);
+  const cx=cvBg.width/2,cy=cvBg.height*.45;
+
+  // Deep radial glow center
+  const rg=bCtx.createRadialGradient(cx,cy,0,cx,cy,Math.min(cvBg.width,cvBg.height)*.6);
+  rg.addColorStop(0,'rgba(255,180,0,.04)');
+  rg.addColorStop(.4,'rgba(255,100,0,.015)');
+  rg.addColorStop(1,'transparent');
+  bCtx.fillStyle=rg;
+  bCtx.fillRect(0,0,cvBg.width,cvBg.height);
+
+  // Bottom vignette
+  const bg2=bCtx.createLinearGradient(0,cvBg.height*.6,0,cvBg.height);
+  bg2.addColorStop(0,'transparent');
+  bg2.addColorStop(1,'rgba(3,0,10,.6)');
+  bCtx.fillStyle=bg2;
+  bCtx.fillRect(0,0,cvBg.width,cvBg.height);
+}
+drawBg();
+window.addEventListener('resize',()=>{resizeBg();drawBg()});
+
+// ── PARTICLE CANVAS ──
+const cvP=document.getElementById('cv-particles'),pCtx=cvP.getContext('2d');
+function resizeP(){cvP.width=innerWidth;cvP.height=innerHeight}
+resizeP();window.addEventListener('resize',resizeP);
+
+// Gold floating particles
+const PARTICLES=[];
+const P_COUNT=180;
+for(let i=0;i<P_COUNT;i++){
+  PARTICLES.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    r:Math.random()*1.8+.3,
+    vx:(Math.random()-.5)*.3,
+    vy:-(Math.random()*.5+.1),
+    a:Math.random(),
+    aDir:(Math.random()<.5?1:-1)*(Math.random()*.003+.001),
+    gold:Math.random()>.3,
+    size:Math.random()*2+.5
+  });
+}
+
+// Ember burst effect
+const EMBERS=[];
+function spawnEmbers(x,y,n=12){
+  for(let i=0;i<n;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=Math.random()*4+1;
+    EMBERS.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1,maxLife:Math.random()*.8+.4,r:Math.random()*3+1,gold:Math.random()>.4});
+  }
+}
+
+// Spawn embers on name area occasionally
+setInterval(()=>{
+  const heroSection=document.getElementById('hero');
+  if(heroSection){
+    const rect=heroSection.getBoundingClientRect();
+    if(rect.bottom>0&&rect.top<innerHeight){
+      const x=innerWidth/2+(Math.random()-.5)*400;
+      const y=innerHeight*.35+(Math.random()-.5)*100;
+      spawnEmbers(x,y,6);
+    }
+  }
+},800);
+
+document.addEventListener('click',e=>spawnEmbers(e.clientX,e.clientY,20));
+
+// Flowing connection lines between nearby particles
+function drawParticles(){
+  pCtx.clearRect(0,0,cvP.width,cvP.height);
+
+  // Update & draw particles
+  for(const p of PARTICLES){
+    p.x+=p.vx;p.y+=p.vy;
+    p.a+=p.aDir;
+    if(p.a>1||p.a<0)p.aDir*=-1;
+    if(p.y<-10)p.y=cvP.height+10;
+    if(p.x<-10)p.x=cvP.width+10;
+    if(p.x>cvP.width+10)p.x=-10;
+
+    const c=p.gold?`rgba(255,215,0,${p.a*.7})`:`rgba(255,140,0,${p.a*.4})`;
+    pCtx.beginPath();
+    pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    pCtx.fillStyle=c;
+    pCtx.fill();
+    if(p.gold&&p.a>.6){
+      pCtx.beginPath();pCtx.arc(p.x,p.y,p.size*3,0,Math.PI*2);
+      pCtx.fillStyle=`rgba(255,215,0,${(p.a-.6)*.08})`;pCtx.fill();
+    }
+  }
+
+  // Connections
+  for(let i=0;i<PARTICLES.length;i++){
+    for(let j=i+1;j<PARTICLES.length;j+=2){
+      const dx=PARTICLES[i].x-PARTICLES[j].x,dy=PARTICLES[i].y-PARTICLES[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){
+        pCtx.beginPath();pCtx.moveTo(PARTICLES[i].x,PARTICLES[i].y);pCtx.lineTo(PARTICLES[j].x,PARTICLES[j].y);
+        pCtx.strokeStyle=`rgba(255,200,0,${.06*(1-d/120)})`;pCtx.lineWidth=.5;pCtx.stroke();
+      }
+    }
+  }
+
+  // Embers
+  for(let i=EMBERS.length-1;i>=0;i--){
+    const e=EMBERS[i];
+    e.x+=e.vx;e.y+=e.vy;e.vx*=.94;e.vy*=.94;e.life-=.02;
+    if(e.life<=0){EMBERS.splice(i,1);continue}
+    const al=e.life/e.maxLife;
+    pCtx.beginPath();pCtx.arc(e.x,e.y,e.r*al,0,Math.PI*2);
+    pCtx.fillStyle=e.gold?`rgba(255,215,0,${al*.9})`:`rgba(255,80,0,${al*.7})`;
+    pCtx.fill();
+    if(al>.5){
+      pCtx.beginPath();pCtx.arc(e.x,e.y,e.r*al*4,0,Math.PI*2);
+      pCtx.fillStyle=e.gold?`rgba(255,215,0,${al*.08})`:`rgba(255,80,0,${al*.06})`;
+      pCtx.fill();
+    }
+  }
+
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ── SCROLL REVEAL ──
+const ro=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');ro.unobserve(e.target)}})},{threshold:.08});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>ro.observe(el));
+
+// ── TIMELINE ITEMS ──
+const tlObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){
+  const items=document.querySelectorAll('.tl-item');
+  items.forEach((item,i)=>setTimeout(()=>item.classList.add('visible'),i*180));
+  tlObs.unobserve(e.target);
+}})},{threshold:.1});
+const tlTrack=document.getElementById('tl-track');
+if(tlTrack)tlObs.observe(tlTrack);
+
+// ── HERO NAME GLOW PULSE ──
+const heroName=document.querySelector('.hero-name');
+if(heroName){
+  setInterval(()=>{
+    const n2=heroName.querySelector('.n2');
+    if(n2){n2.style.filter=`drop-shadow(0 0 ${40+Math.random()*30}px rgba(255,215,0,${.5+Math.random()*.3}))`;}
+  },500);
+}
+
+// ── PARALLAX ON SCROLL ──
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  const sacredGeo=document.querySelector('.sacred-geo');
+  if(sacredGeo)sacredGeo.style.transform=`translateY(${y*.3}px)`;
+  const raysEl=document.querySelector('.rays');
+  if(raysEl)raysEl.style.transform=`translateY(${y*.2}px)`;
+});
+
+// ── CURSOR SPARKLE ON MOVE ──
+let lastSparkle=0;
+document.addEventListener('mousemove',e=>{
+  const now=Date.now();
+  if(now-lastSparkle>80){
+    lastSparkle=now;
+    if(Math.random()>.6)EMBERS.push({x:e.clientX+(Math.random()-.5)*10,y:e.clientY+(Math.random()-.5)*10,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,life:.6,maxLife:.6,r:1.5,gold:true});
+  }
+});
+</script>
+</body>
+</html>
